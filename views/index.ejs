@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="the_hottest_styles.css">
+	<script src="underscore/underscore.js"></script>
+	<script src="jquery/dist/jquery.js"></script>
+	<script src="backbone/backbone.js"></script>
+</head>
+<body>
+
+	<div id="loading">LOADING</div>
+
+	<div id="user"></div>
+
+	<!--MAIN CONTENT from Backbone -->
+	<div id="ponder" class="vessel"></div>
+	<div id="see" class="vessel"></div>
+	<div id="hear" class="vessel"></div>
+	<div id="learn" class="vessel"></div>
+	<div id="read" class="vessel"></div>
+	
+	<script src="spine.js"></script>
+	<script src="ripple.js"></script>
+	<!-- Bootstrap user model from server model -->
+	<script>
+		window.user = new User(<%- JSON.stringify(userData) %>);
+		console.log(<%- JSON.stringify(userData) %>);
+		<% if (isAuthenticated === true) { %>
+			user.isAuthenticated = true
+		<% } else { %>
+			user.isAuthenticated = false
+		<% } %>
+	</script>
+	<script src="main.js"></script>
+
+</body>
+</html>
