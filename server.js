@@ -28,12 +28,12 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
+// -- TBD --
+// var User = require('./models/user');
+// var Vessel = require('./models/vessel');
+
 // --- SERVER ---
-
-var User = require('./models/user')
-var Vessel = require('./models/vessel');
-
-
 MongoClient.connect(MongoURI, function(err, db) {
 	if (err) { throw err };
 
@@ -53,7 +53,6 @@ MongoClient.connect(MongoURI, function(err, db) {
 				res.render('index.ejs', { userData: user, isAuthenticated: true });
 			})
 		}
-		// res.sendFile('index.html');
 	});
 
 // SEND USER DATA / AUTHENTICATE
