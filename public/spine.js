@@ -1,6 +1,6 @@
 var User = Backbone.Model.extend({
 	initialize: function(){
-
+		this.message = '';
 	},
 	urlRoot: '/users',
 	defaults: {
@@ -11,24 +11,29 @@ var User = Backbone.Model.extend({
 	create: function(data){
 		user.save(data, {
 			success: function(model, response){
-				$('.message').html(response.message)
+				console.log(this)
+				// this.message = response.message;
 			},
-			error: function(model, response){
-
-			}
+			error: function(model, response){}
+		});
+	},
+	authenticate: function(data){
+		$.ajax({
+			url: '/session',
+			method: 'POST',
+			data: data
 		});
 	}
 });
 
 var UserView = Backbone.View.extend({
 	el: '#user',
-	message: '',
 	templateNew: _.template(userNewTemplate),
 	templateLogin: _.template(userLoginTemplate),
 	templateShow: _.template(userShowTemplate),
 	initialize: function(){
-		this.listenTo(this.model, 'sync', function(){
-			console.log('maybe synced')
+		this.listenTo(this.model, 'sync', function(object, res){
+			this.renderNew(null, res.message);
 		})
 		this.render();
 	},
@@ -44,8 +49,8 @@ var UserView = Backbone.View.extend({
 	renderLogin: function(){
 		this.$el.html(this.templateLogin);
 	},
-	renderNew: function(){
-		this.$el.html(this.templateNew({message: this.message}));
+	renderNew: function(event, message){
+		this.$el.html(this.templateNew({message: '' || message}));
 	},
 	redirectNew: function(){
 		$.ajax({
@@ -53,19 +58,36 @@ var UserView = Backbone.View.extend({
 			method: 'GET'
 		})
 	},
-	create: function() {
+	create: function(){
 		var data = {
 			username: $('#username').val(),
 			email: $('#email').val(),
 			password: $('#password').val(),
 			passwordConfirm: $('#password-confirm').val()
-		}
+		};
 		this.model.create(data);
+	},
+	authenticate: function(){
+		var data = {
+			username: $('#username').val(),
+			password: $('#password').val()
+		};
+		this.model.authenticate(data);
+	},
+	logout: function() {
+		$.ajax({
+			method: 'DELETE',
+			url: '/session'
+		}).done(function(response){
+			console.log(response)
+			window.location = '/'
+		})
 	},
 	events: {
 		'click .signup': 'renderNew',
 		'click .create': 'create',
-		'click .login': 'authenticate'
+		'click .login': 'authenticate',
+		'click .logout': 'logout'
 	}
 })
 

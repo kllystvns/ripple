@@ -17,7 +17,8 @@ var userLoginTemplate = '\
 var userShowTemplate = '\
 	<p>Hello, user!</p> \
 	<p id="username"><%= username %></p> \
-	<p id="email"><%= email %></p>';
+	<p id="email"><%= email %></p> \
+	<button class="logout">LOG OUT</button>';
 
 
 

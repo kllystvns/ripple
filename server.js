@@ -3,7 +3,7 @@ var MongoDB = require('mongodb');
 var MongoClient = MongoDB.MongoClient;
 var ObjectID = MongoDB.ObjectID;
 var MongoURI = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/ripple';
-var defaultUser = require('./seed');
+var defaultUser = require('./render_seed');
 
 // --- EXPRESS ---
 var express = require('express');
@@ -46,35 +46,67 @@ MongoClient.connect(MongoURI, function(err, db) {
 // LANDING PAGE & AUTHENTICATION
 	app.get('/', function(req, res) {
 		if (!req.session.user_id) {
-			res.render('jumpIn.ejs', { isAuthenticated: false });
+			console.log('gatekept')
+			res.redirect('/session');
 		}
 		else {
-			users.find({_id: new ObjectID(session.user_id)}).toArray(function(err, results){
+			console.log('gateunkept')
+			console.log('sessionid' + req.session.user_id)
+			users.find({_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
+				console.log(new ObjectID(req.session.user_id))
+				console.log(results);
 				var user = results[0];
+				if (!user) {
+					req.session.user_id = null;
+					res.redirect('/');
+				}
 				res.render('index.ejs', { userData: user, isAuthenticated: true });
 			})
 		}
 	});
 
 // LOG-IN USER
-	app.get('/login', function(req, res){
-		console.log(req.body);
+	app.get('/session', function(req, res){
+		console.log('get login', req.body);
+		res.render('jumpIn.ejs', { isAuthenticated: false });
 	})
 
-// SEND USER DATA / AUTHENTICATE
-  app.get('/users/:id', function(req, res) {
-  	if (!req.session.user_id) {
-  		console.log(req.body);
-  	}
-  	else {
-	  	users.findOne({_id: new ObjectID(session.user_id)}, function(err, result){
-	  		res.json(result);
-	  		req.session.user_id = null;
-	  		console.log('hey hey');
-	  	})
-	  }
 
-  });
+// AUTHENTICATE USER
+	app.post('/session', function(req, res){
+
+		var authenticate = function(testPassword, passCrypt){
+			return bcrypt.compareSync(testPassword, passCrypt);
+		}
+
+
+
+		users.findOne({username: req.body.username}, function(err, result){
+			var error = 'username not found';
+			console.log(req.body, result);
+			if (result) {
+				error = null;
+				if (!(authenticate(req.body.password, result.passCrypt))) {
+					console.log('righthere')
+					error = 'incorrect password';
+					res.json({ message: error });
+				}
+				else {
+					req.session.user_id = result._id;
+					res.redirect('/');
+				}
+			}
+			else {
+				res.json({ message: error });
+			}
+		});
+	});
+
+	app.delete('/session', function(req, res){
+		req.session.user_id = null;
+		console.log('destroyed')
+		res.json({redirect: '/'});
+	})
 
 // CREATE NEW USER
 	app.post('/users', function(req, res){
@@ -85,6 +117,10 @@ MongoClient.connect(MongoURI, function(err, db) {
 			userData.name = data.name;
 			userData.passCrypt = bcrypt.hashSync(data.password);
 			users.insert(userData, function(err, result){
+				console.log(err);
+				console.log('create');
+				result = result.ops[0];
+				console.log()
 				req.session.user_id = result._id;
 				res.redirect('/');
 			});
@@ -98,7 +134,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 			if (result || error) {
 				console.log('here')
 				if (result) { 
-					error = 'username unavailable';
+					error = 'username is unavailable';
 				}
 				res.json({ message: error });
 			}
