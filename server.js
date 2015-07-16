@@ -28,6 +28,8 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+var bcrypt = require('bcrypt-nodejs');
+
 
 // -- TBD --
 // var User = require('./models/user');
@@ -44,8 +46,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 // LANDING PAGE & AUTHENTICATION
 	app.get('/', function(req, res) {
 		if (!req.session.user_id) {
-			res.render('index.ejs', { userData: defaultUser, isAuthenticated: false });
-			console.log(defaultUser);
+			res.render('jumpIn.ejs', { isAuthenticated: false });
 		}
 		else {
 			users.find({_id: new ObjectID(session.user_id)}).toArray(function(err, results){
@@ -55,16 +56,15 @@ MongoClient.connect(MongoURI, function(err, db) {
 		}
 	});
 
-// SEND USER DATA / AUTHENTICATE
-  app.get('/users', function(req, res) {
-    db.collection('users').find({}).toArray(function(error, results) {
-      res.json(results);
-    })
-  });
+// LOG-IN USER
+	app.get('/login', function(req, res){
+		console.log(req.body);
+	})
 
+// SEND USER DATA / AUTHENTICATE
   app.get('/users/:id', function(req, res) {
   	if (!req.session.user_id) {
-  		console.log('woah woah')
+  		console.log(req.body);
   	}
   	else {
 	  	users.findOne({_id: new ObjectID(session.user_id)}, function(err, result){
@@ -75,5 +75,44 @@ MongoClient.connect(MongoURI, function(err, db) {
 	  }
 
   });
+
+// CREATE NEW USER
+	app.post('/users', function(req, res){
+		var createUser = function(data){
+			var userData = defaultUser;
+			userData.username = data.username;
+			userData.email = data.email;
+			userData.name = data.name;
+			userData.passCrypt = bcrypt.hashSync(data.password);
+			users.insert(userData, function(err, result){
+				req.session.user_id = result._id;
+				res.redirect('/');
+			});
+		}
+
+		var error;
+		if (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7) {
+			error = 'invalid password';
+		}
+		users.findOne({username: req.body.username}, function(err, result){
+			if (result || error) {
+				console.log('here')
+				if (result) { 
+					error = 'username unavailable';
+				}
+				res.json({ message: error });
+			}
+			else {
+				createUser(req.body);
+			}
+		});
+	})
+
+
+// EDIT USER'S DROPLETS
+
+	app.put('/users/:id/vessels', function(req, res){
+		console.log(req.body)
+	});
 
 });

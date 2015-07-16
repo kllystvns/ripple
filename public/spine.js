@@ -1,35 +1,85 @@
 var User = Backbone.Model.extend({
-	initalize: function(){
-		this.vessels = new VesselCollection();
+	initialize: function(){
+
 	},
+	urlRoot: '/users',
 	defaults: {
 		username: null,
 		email: null,
 		name: null
 	},
-	urlRoot: '/users'
+	create: function(data){
+		user.save(data, {
+			success: function(model, response){
+				$('.message').html(response.message)
+			},
+			error: function(model, response){
+
+			}
+		});
+	}
 });
 
 var UserView = Backbone.View.extend({
 	el: '#user',
-	initalize: function(){
+	message: '',
+	templateNew: _.template(userNewTemplate),
+	templateLogin: _.template(userLoginTemplate),
+	templateShow: _.template(userShowTemplate),
+	initialize: function(){
+		this.listenTo(this.model, 'sync', function(){
+			console.log('maybe synced')
+		})
 		this.render();
 	},
 	render: function(){
-		this.$el.html('user not quite ready')
+		if (user.isAuthenticated === false) {
+			this.renderLogin();
+		}
+		else {
+			this.$el.html(this.templateShow(user.attributes) );
+		}
+
+	},
+	renderLogin: function(){
+		this.$el.html(this.templateLogin);
+	},
+	renderNew: function(){
+		this.$el.html(this.templateNew({message: this.message}));
+	},
+	redirectNew: function(){
+		$.ajax({
+			url: '/users/new',
+			method: 'GET'
+		})
+	},
+	create: function() {
+		var data = {
+			username: $('#username').val(),
+			email: $('#email').val(),
+			password: $('#password').val(),
+			passwordConfirm: $('#password-confirm').val()
+		}
+		this.model.create(data);
+	},
+	events: {
+		'click .signup': 'renderNew',
+		'click .create': 'create',
+		'click .login': 'authenticate'
 	}
 })
 
 
+
 var Vessel = Backbone.Model.extend({
 	initialize: function(){
-		this.items = [];
+		this.droplets = [];
 		// There are 5 slots in the dom/view for items
-		// Make an 'empty' item model if there isnt an item
+		// Make an 'empty' droplet model if there isnt an item
 		for (var i = 0; i < 5; i++) {
-			console.log(this);
-			var data = this.attributes.items[i] ? this.attributes.items[i] : {type: 'uninstantiated'};
-			this.items.push(new Item(data));
+			var data = this.attributes.droplets[i] ? this.attributes.droplets[i] : {type: 'uninstantiated'};
+			data.index = i;
+			this.droplets.push(new Droplet(data));
 		}
 	},
 	defaults: {
@@ -48,41 +98,60 @@ var VesselView = Backbone.View.extend({
 		this.render();
 	},
 	render: function(){
-		_.each(this.model.items, function(e){
-			var currentItem = new ItemView({model: e});
-			var li = currentItem.render();
+		_.each(this.model.droplets, function(e){
+			var currentDroplet = new DropletView({model: e});
+			var li = currentDroplet.render();
 			this.$el.append(li);
 		}, this);
 	}
 });
 
-var Item = Backbone.Model.extend();
+// Vessels contain Droplets
+// Each list item is controlled individually without using a form
+// Items are instantiated by Vessels
+var Droplet = Backbone.Model.extend(); 
 
-var ItemView = Backbone.View.extend({
-	events: {
-		'click .add': function(){
-
-		},
-		'click .delete': function(){
-
-		}
-	},
+var DropletView = Backbone.View.extend({
 	tagName: 'li',
-	templateShow: _.template(itemShowTemplate),
-	templateEdit: _.template(itemEditTemplate),
+	templateShow: _.template(dropletShowTemplate),
+	templateEdit: _.template(dropletEditTemplate),
 	initialize: function(){
 		// this.listenTo(this.model, 'change', this.render);
 	},
 	render: function() {
 		var data = this.model.attributes;
-		return this.$el.html( this.templateShow(data) );
+		if (this.model.attributes.type === 'uninstantiated') {
+			return this.$el.html( this.templateEdit(data) );
+		}
+		else {
+			return this.$el.html( this.templateShow(data) );
+		}
 	},
 	renderEdit: function() {
 		return this.$el.html( this.templateEdit(data) );
-	}
-});
+	},
+	create: function(){
+		user
+	},
+	destroy: function(){
 
-// Specialized views depending on content
+	},
+	events: {
+		'click .add': this.create,
+		'click .delete': this.destroy,
+		'mouseover': function(){
+			this.$('input').css('visibility', 'visible');
+		},
+		'mouseout': function(){
+			if (this.$('input').val() === '') {
+				this.$('input').css('visibility', 'hidden');
+			}
+		}
+	}
+}); // end ItemView
+
+
+// Specialized Vessel views depending on content
 var PonderView = VesselView.extend({
 	el: '#ponder'
 });
@@ -106,10 +175,3 @@ var ReadView = VesselView.extend({
 
 
 
-
-
-var doneLoading = function() {
-	$('#loading').hide();
-}
-
-setTimeout(doneLoading, 2);

@@ -11,16 +11,7 @@
 </head>
 <body>
 
-	<div id="loading">LOADING</div>
-
-	<div id="user"></div>
-
-<!--MAIN CONTENT from Backbone -->
-	<div id="ponder" class="vessel"></div>
-	<div id="see" class="vessel"></div>
-	<div id="hear" class="vessel"></div>
-	<div id="learn" class="vessel"></div>
-	<div id="read" class="vessel"></div>
+	<div id="user" class="new-user"></div>
 
 <!-- TEMPLATES for Backbone --> 
 	<script src="templates.js"></script>
@@ -29,14 +20,10 @@
 	<script src="ripple.js"></script>
 	<!-- Bootstrap user model from server model -->
 	<script>
-		window.user = new User(<%- JSON.stringify(userData) %>);
-		<% if (isAuthenticated === true) { %>
-			user.isAuthenticated = true
-		<% } else { %>
-			user.isAuthenticated = false
-		<% } %>
+		window.user = new User();
+		user.isAuthenticated = false
+		userView = new UserView({model: user});
 	</script>
-	<script src="main.js"></script>
 
 </body>
 </html>
