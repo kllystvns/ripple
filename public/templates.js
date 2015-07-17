@@ -36,4 +36,5 @@ var dropletShowTemplate = '\
 
 var dropletEditTemplate = '\
 	<input class="text" type="text" placeholder="add something"> \
+	<input class="url" type="text" placeholder="where is it from?"> \
 	<button class="add">+</button>';

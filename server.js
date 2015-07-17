@@ -66,6 +66,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 				}
 				Droplets.find({user_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
 					var droplets = results;
+					console.log(droplets)
 					res.render('index.ejs', { userData: user, dropletsData: droplets, isAuthenticated: true });
 				})
 			})
@@ -154,10 +155,40 @@ MongoClient.connect(MongoURI, function(err, db) {
 	})
 
 
+// CREATE A NEW DROPLET
+	app.post('/droplets', function(req, res){
+		var dropletData = req.body;
+		dropletData.user_id = new ObjectID(req.session.user_id);
+		Droplets.insert(dropletData, function(err, result){
+			var result = result.ops[0];
+			res.json(result);
+			console.log(result);
+		})
+	})
+
+
 // EDIT USER'S DROPLETS
 
-	app.put('/vessels/:id', function(req, res){
-		console.log(req.body)
+	app.put('/droplets/:id', function(req, res){
+		console.log(req.params)
+
+		Droplets.remove({_id: new ObjectID(req.body._id)}, function(){
+			res.json({type: 'uninstantiated', category: req.body.category});
+		})
 	});
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+

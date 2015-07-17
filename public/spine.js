@@ -29,6 +29,7 @@ var User = Backbone.Model.extend({
 				window.location = response.redirect;
 			}
 			else {
+				// null is placeholder for jQuery event
 				this.trigger('loginAttempt', null, response);
 			}
 		});
@@ -67,6 +68,7 @@ var UserView = Backbone.View.extend({
 		}
 
 	},
+	// `event` will never be used, but is passed by jQuery
 	renderLogin: function(event, message){
 		this.$el.html(this.templateLogin({message: '' || message}));
 	},
@@ -102,69 +104,34 @@ var UserView = Backbone.View.extend({
 
 
 
-// var Vessel = Backbone.Model.extend({
-// 	initialize: function(){
-// 		this.droplets = [];
-// 		// There are 5 slots in the dom/view for items
-// 		// Make an 'empty' droplet model if there isnt an item
-// 		for (var i = 0; i < 5; i++) {
-// 			var data = this.attributes.droplets[i] ? this.attributes.droplets[i] : {type: 'uninstantiated'};
-// 			data.index = i;
-// 			this.droplets.push(new Droplet(data));
-// 		}
-// 	},
-// 	defaults: {
-// 		category: null
-// 	},
-// 	collection: VesselCollection
-// });
-
-// var VesselCollection = Backbone.Collection.extend({
-// 	model: Vessel,
-// 	url: '/users/:id/vessels'
-// });
-
-var Vessel = Backbone.Collection.extend({
-	model: Droplet,
-	defaults: {
-		category: null
-	},
-	initialize: function(){
-		this.url = '/vessels/' + this.get('category');
-		for (var i = 0; i < 5; i++) {
-			// this.add
-		}
-		//make the models!
-	}
-})
-
-
-
-
-var VesselView = Backbone.View.extend({
-	initialize: function(){
-		this.render();
-	},
-	render: function(){
-		_.each(this.collection.models, function(e){
-			var currentDroplet = new DropletView({model: e});
-			var li = currentDroplet.render();
-			this.$el.append(li);
-		}, this);
-	}
-});
-
 // Vessels contain Droplets
 // Each list item is controlled individually without using a form
-// Items are instantiated by Vessels
-var Droplet = Backbone.Model.extend(); 
+// Droplets are instantiated by Vessels
+var Droplet = Backbone.Model.extend({
+	idAttribute: '_id',
+	create: function(data){
+		this.set(data);
+		this.save();
+	},
+	liquidate: function(){
+		this.save(null, {
+			silent: true,
+			success: function(model, response){
+				model.clear({silent: true})
+				model.set(response);
+				model.trigger('liquidate');
+			}
+		})
+	}
+}); 
 
 var DropletView = Backbone.View.extend({
 	tagName: 'li',
 	templateShow: _.template(dropletShowTemplate),
 	templateEdit: _.template(dropletEditTemplate),
 	initialize: function(){
-		// this.listenTo(this.model, 'change', this.render);
+		this.listenTo(this.model, 'sync', this.render);
+		this.listenTo(this.model, 'liquidate', this.render);
 	},
 	render: function() {
 		var data = this.model.attributes;
@@ -179,10 +146,15 @@ var DropletView = Backbone.View.extend({
 		return this.$el.html( this.templateEdit(data) );
 	},
 	create: function(){
-		user
+		var data = {
+			name: this.$('.text').val(),
+			url: this.$('.url').val(),
+			type: 'link'
+		};
+		this.model.create(data);
 	},
 	destroy: function(){
-
+		this.model.liquidate();
 	},
 	events: {
 		'click .add': 'create',
@@ -199,23 +171,40 @@ var DropletView = Backbone.View.extend({
 }); // end ItemView
 
 
+var Vessel = Backbone.Collection.extend({
+	model: Droplet,
+	url: '/droplets',
+	initialize: function(models, options){
+		this.category = options.category;
+	}
+})
+
+var VesselView = Backbone.View.extend({
+	initialize: function(){
+		this.render();
+	},
+	render: function(){
+		_.each(this.collection.models, function(e){
+			var currentDroplet = new DropletView({model: e});
+			var li = currentDroplet.render();
+			this.$el.append(li);
+		}, this);
+	}
+});
+
 // Specialized Vessel views depending on content
 var PonderView = VesselView.extend({
 	el: '#ponder'
 });
-
 var SeeView = VesselView.extend({
 	el: '#see'
 });
-
 var HearView = VesselView.extend({
 	el: '#hear'
 });
-
 var LearnView = VesselView.extend({
 	el: '#learn'
 });
-
 var ReadView = VesselView.extend({
 	el: '#read'
 });
