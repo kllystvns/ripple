@@ -111,13 +111,16 @@ var Droplet = Backbone.Model.extend({
 	idAttribute: '_id',
 	create: function(data){
 		this.set(data);
-		this.save();
+		this.save(null, {
+			success: function(model, response){
+				model.trigger('created')
+			}
+		});
 	},
 	liquidate: function(){
 		this.save(null, {
-			silent: true,
 			success: function(model, response){
-				model.clear({silent: true})
+				model.clear()
 				model.set(response);
 				model.trigger('liquidate');
 			}
@@ -130,7 +133,7 @@ var DropletView = Backbone.View.extend({
 	templateShow: _.template(dropletShowTemplate),
 	templateEdit: _.template(dropletEditTemplate),
 	initialize: function(){
-		this.listenTo(this.model, 'sync', this.render);
+		this.listenTo(this.model, 'created', this.render);
 		this.listenTo(this.model, 'liquidate', this.render);
 	},
 	render: function() {

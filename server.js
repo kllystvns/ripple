@@ -58,7 +58,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 		else {
 			console.log('gateunkept')
 			console.log('sessionid' + req.session.user_id)
-			Users.find({_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
+			Users.find({_id: new ObjectID(req.session.user_id)}, {passCrypt: 0}).toArray(function(err, results){
 				var user = results[0];
 				if (!user) {
 					req.session.user_id = null;
