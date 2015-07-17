@@ -1,6 +1,6 @@
 var User = Backbone.Model.extend({
 	initialize: function(){
-		this.message = '';
+
 	},
 	urlRoot: '/users',
 	defaults: {
@@ -11,8 +11,9 @@ var User = Backbone.Model.extend({
 	create: function(data){
 		user.save(data, {
 			success: function(model, response){
-				console.log(this)
-				// this.message = response.message;
+				if (response.redirect) {
+					window.location = response.redirect;
+				}
 			},
 			error: function(model, response){}
 		});
@@ -21,7 +22,24 @@ var User = Backbone.Model.extend({
 		$.ajax({
 			url: '/session',
 			method: 'POST',
-			data: data
+			data: data,
+			context: this
+		}).done(function(response){
+			if (response.redirect) {
+				window.location = response.redirect;
+			}
+			else {
+				this.trigger('loginAttempt', null, response);
+			}
+		});
+	},
+	logout: function(){
+		$.ajax({
+			method: 'DELETE',
+			url: '/session'
+		})
+		.done(function(response){
+			window.location = response.redirect;
 		});
 	}
 });
@@ -32,8 +50,11 @@ var UserView = Backbone.View.extend({
 	templateLogin: _.template(userLoginTemplate),
 	templateShow: _.template(userShowTemplate),
 	initialize: function(){
-		this.listenTo(this.model, 'sync', function(object, res){
-			this.renderNew(null, res.message);
+		this.listenTo(this.model, 'sync', function(object, response){
+			this.renderNew(null, response.message);
+		})
+		this.listenTo(this.model, 'loginAttempt', function(object, response){
+			this.renderLogin(null, response.message);
 		})
 		this.render();
 	},
@@ -46,17 +67,11 @@ var UserView = Backbone.View.extend({
 		}
 
 	},
-	renderLogin: function(){
-		this.$el.html(this.templateLogin);
+	renderLogin: function(event, message){
+		this.$el.html(this.templateLogin({message: '' || message}));
 	},
 	renderNew: function(event, message){
 		this.$el.html(this.templateNew({message: '' || message}));
-	},
-	redirectNew: function(){
-		$.ajax({
-			url: '/users/new',
-			method: 'GET'
-		})
 	},
 	create: function(){
 		var data = {
@@ -75,13 +90,7 @@ var UserView = Backbone.View.extend({
 		this.model.authenticate(data);
 	},
 	logout: function() {
-		$.ajax({
-			method: 'DELETE',
-			url: '/session'
-		}).done(function(response){
-			console.log(response)
-			window.location = '/'
-		})
+		this.model.logout();
 	},
 	events: {
 		'click .signup': 'renderNew',
@@ -93,34 +102,51 @@ var UserView = Backbone.View.extend({
 
 
 
-var Vessel = Backbone.Model.extend({
-	initialize: function(){
-		this.droplets = [];
-		// There are 5 slots in the dom/view for items
-		// Make an 'empty' droplet model if there isnt an item
-		for (var i = 0; i < 5; i++) {
-			var data = this.attributes.droplets[i] ? this.attributes.droplets[i] : {type: 'uninstantiated'};
-			data.index = i;
-			this.droplets.push(new Droplet(data));
-		}
-	},
+// var Vessel = Backbone.Model.extend({
+// 	initialize: function(){
+// 		this.droplets = [];
+// 		// There are 5 slots in the dom/view for items
+// 		// Make an 'empty' droplet model if there isnt an item
+// 		for (var i = 0; i < 5; i++) {
+// 			var data = this.attributes.droplets[i] ? this.attributes.droplets[i] : {type: 'uninstantiated'};
+// 			data.index = i;
+// 			this.droplets.push(new Droplet(data));
+// 		}
+// 	},
+// 	defaults: {
+// 		category: null
+// 	},
+// 	collection: VesselCollection
+// });
+
+// var VesselCollection = Backbone.Collection.extend({
+// 	model: Vessel,
+// 	url: '/users/:id/vessels'
+// });
+
+var Vessel = Backbone.Collection.extend({
+	model: Droplet,
 	defaults: {
 		category: null
 	},
-	collection: VesselCollection
-});
+	initialize: function(){
+		this.url = '/vessels/' + this.get('category');
+		for (var i = 0; i < 5; i++) {
+			// this.add
+		}
+		//make the models!
+	}
+})
 
-var VesselCollection = Backbone.Collection.extend({
-	model: Vessel,
-	url: '/users/:id/vessels'
-});
+
+
 
 var VesselView = Backbone.View.extend({
 	initialize: function(){
 		this.render();
 	},
 	render: function(){
-		_.each(this.model.droplets, function(e){
+		_.each(this.collection.models, function(e){
 			var currentDroplet = new DropletView({model: e});
 			var li = currentDroplet.render();
 			this.$el.append(li);
@@ -159,8 +185,8 @@ var DropletView = Backbone.View.extend({
 
 	},
 	events: {
-		'click .add': this.create,
-		'click .delete': this.destroy,
+		'click .add': 'create',
+		'click .delete': 'destroy',
 		'mouseover': function(){
 			this.$('input').css('visibility', 'visible');
 		},

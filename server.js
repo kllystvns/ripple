@@ -3,7 +3,7 @@ var MongoDB = require('mongodb');
 var MongoClient = MongoDB.MongoClient;
 var ObjectID = MongoDB.ObjectID;
 var MongoURI = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/ripple';
-var defaultUser = require('./render_seed');
+var defaultDroplets = require('./render_seed');
 
 // --- EXPRESS ---
 var express = require('express');
@@ -31,15 +31,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var bcrypt = require('bcrypt-nodejs');
 
 
-// -- TBD --
-// var User = require('./models/user');
-// var Vessel = require('./models/vessel');
 
 // --- SERVER ---
 MongoClient.connect(MongoURI, function(err, db) {
 	if (err) { throw err };
 
-	var users = db.collection('users');
+	var Users = db.collection('users');
+	var Droplets = db.collection('droplets');
+	var clone = function(object){
+		var newObject = {}
+		for (attr in object) {
+			newObject[attr] = object[attr];
+		}
+		return newObject;
+	}
+
 
 	app.listen(port);
 
@@ -52,20 +58,21 @@ MongoClient.connect(MongoURI, function(err, db) {
 		else {
 			console.log('gateunkept')
 			console.log('sessionid' + req.session.user_id)
-			users.find({_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
-				console.log(new ObjectID(req.session.user_id))
-				console.log(results);
+			Users.find({_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
 				var user = results[0];
 				if (!user) {
 					req.session.user_id = null;
-					res.redirect('/');
+					res.redirect('/session');
 				}
-				res.render('index.ejs', { userData: user, isAuthenticated: true });
+				Droplets.find({user_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
+					var droplets = results;
+					res.render('index.ejs', { userData: user, dropletsData: droplets, isAuthenticated: true });
+				})
 			})
 		}
 	});
 
-// LOG-IN USER
+// SHOW LOG-IN
 	app.get('/session', function(req, res){
 		console.log('get login', req.body);
 		res.render('jumpIn.ejs', { isAuthenticated: false });
@@ -74,16 +81,12 @@ MongoClient.connect(MongoURI, function(err, db) {
 
 // AUTHENTICATE USER
 	app.post('/session', function(req, res){
-
 		var authenticate = function(testPassword, passCrypt){
 			return bcrypt.compareSync(testPassword, passCrypt);
 		}
-
-
-
-		users.findOne({username: req.body.username}, function(err, result){
+		Users.findOne({username: req.body.username}, function(err, result){
 			var error = 'username not found';
-			console.log(req.body, result);
+			console.log(req.body.username, result);
 			if (result) {
 				error = null;
 				if (!(authenticate(req.body.password, result.passCrypt))) {
@@ -93,7 +96,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 				}
 				else {
 					req.session.user_id = result._id;
-					res.redirect('/');
+					res.json({redirect: '/'});
 				}
 			}
 			else {
@@ -104,36 +107,19 @@ MongoClient.connect(MongoURI, function(err, db) {
 
 	app.delete('/session', function(req, res){
 		req.session.user_id = null;
-		console.log('destroyed')
 		res.json({redirect: '/'});
 	})
 
 // CREATE NEW USER
 	app.post('/users', function(req, res){
-		var createUser = function(data){
-			var userData = defaultUser;
-			userData.username = data.username;
-			userData.email = data.email;
-			userData.name = data.name;
-			userData.passCrypt = bcrypt.hashSync(data.password);
-			users.insert(userData, function(err, result){
-				console.log(err);
-				console.log('create');
-				result = result.ops[0];
-				console.log()
-				req.session.user_id = result._id;
-				res.redirect('/');
-			});
-		}
-
 		var error;
 		if (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7) {
 			error = 'invalid password';
 		}
-		users.findOne({username: req.body.username}, function(err, result){
+		Users.findOne({username: req.body.username}, function(err, result){
 			if (result || error) {
 				console.log('here')
-				if (result) { 
+				if (result || req.body.username === '') { 
 					error = 'username is unavailable';
 				}
 				res.json({ message: error });
@@ -142,12 +128,35 @@ MongoClient.connect(MongoURI, function(err, db) {
 				createUser(req.body);
 			}
 		});
+
+		var createUser = function(data){
+			var userData = {};
+			userData.username = data.username;
+			userData.email = data.email;
+			userData.name = data.name;
+			var salt = bcrypt.genSaltSync(10);
+			userData.passCrypt = bcrypt.hashSync(data.password, salt);
+			Users.insert(userData, function(err, result){
+				result = result.ops[0];
+				req.session.user_id = result._id;
+
+				var dropletsData = [];
+				for (var i = 0; i < defaultDroplets.length; i++) {
+					var drop = clone(defaultDroplets[i].user_id);
+					drop.user_id = result._id;
+					Droplets.push(drop);
+				}
+				Droplets.insert(dropletsData, function(){
+					res.json({redirect: '/'});
+				})
+			});
+		}
 	})
 
 
 // EDIT USER'S DROPLETS
 
-	app.put('/users/:id/vessels', function(req, res){
+	app.put('/vessels/:id', function(req, res){
 		console.log(req.body)
 	});
 

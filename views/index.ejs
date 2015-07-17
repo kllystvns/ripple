@@ -35,6 +35,7 @@
 		<% } else { %>
 			user.isAuthenticated = false
 		<% } %>
+		window.droplets = <%- JSON.stringify(dropletsData) %>
 	</script>
 	<script src="main.js"></script>
 

@@ -9,6 +9,7 @@ var userNewTemplate = '\
 
 var userLoginTemplate = '\
 	<p>Hello, user! again</p> \
+	<p class="message"><%= message %></p> \
 	<input type="text" id="username" placeholder="username"> \
 	<input type="password" id="password" placeholder="password"> \
 	<button class="login">SIGN IN</button> \
