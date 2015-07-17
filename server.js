@@ -144,7 +144,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 				for (var i = 0; i < defaultDroplets.length; i++) {
 					var drop = clone(defaultDroplets[i].user_id);
 					drop.user_id = result._id;
-					Droplets.push(drop);
+					dropletsData.push(drop);
 				}
 				Droplets.insert(dropletsData, function(){
 					res.json({redirect: '/'});
