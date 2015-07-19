@@ -36,6 +36,8 @@ var bcrypt = require('bcrypt-nodejs');
 MongoClient.connect(MongoURI, function(err, db) {
 	if (err) { throw err };
 
+	app.listen(port);
+
 	var Users = db.collection('users');
 	var Droplets = db.collection('droplets');
 	var clone = function(object){
@@ -45,9 +47,6 @@ MongoClient.connect(MongoURI, function(err, db) {
 		}
 		return newObject;
 	}
-
-
-	app.listen(port);
 
 // LANDING PAGE & AUTHENTICATION
 	app.get('/', function(req, res) {

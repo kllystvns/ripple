@@ -30,5 +30,7 @@ var readView = new ReadView({collection: read});
 var doneLoading = function() {
 	$('#loading').hide();
 }
-
-setTimeout(doneLoading, 1000);
+window.onload = function(){
+	$(window).scrollTop(originY);
+	setTimeout(doneLoading, 10);
+}
