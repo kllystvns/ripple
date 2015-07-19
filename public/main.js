@@ -32,5 +32,40 @@ var doneLoading = function() {
 }
 window.onload = function(){
 	$(window).scrollTop(originY);
+
+	window.ponderRipples = new RippleGroup('#ponder', 1);
+	ponderRipples.makeRipple();
+
+	// function setup() {  // setup() runs once
+	// 	createCanvas(window.innerWidth, 4000);
+	//   frameRate(30);
+	// }
+
+	// function draw() {  // draw() loops forever, until stopped
+		
+	// 	ponderRipples.ripples.forEach(function(ripple){
+	// 		beginShape();
+	// 		stroke('#00f');
+	// 		strokeWeight(0.1);
+	// 		var vertex = ripple.getCurveVerteces();
+	// 		vertex.forEach(function(e){
+	// 			curveVertex(e[0], e[1]);
+	// 		})
+	// 		endShape();
+	// 	})
+
+	// 	beginShape();
+	// 				stroke('#00f');
+	// 				strokeWeight(0.1);
+	// 	curveVertex(84,  91);
+	// 	curveVertex(84,  91);
+	// 	curveVertex(68,  19);
+	// 	curveVertex(21,  17);
+	// 	curveVertex(1000, 1000);
+	// 	curveVertex(1000, 1000);
+	// 	endShape();
+	// }
+
+
 	setTimeout(doneLoading, 10);
 }

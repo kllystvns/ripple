@@ -11,7 +11,7 @@ var scrollState = function(){
 
 function Ripple(center, points, bounds){
 	var amp = function(){
-		return Math.random() * 20 + 20;
+		return Math.random() * 10 + 5;
 	}
 	if (bounds) {
 		var tl = bounds[0];
@@ -21,15 +21,16 @@ function Ripple(center, points, bounds){
 
 		var w = tr[0] - tl[0];
 		var h = bl[1] - tl[1];
-		var w1 = w * (0.33 + (0.5 - Math.random()) * 0.2));
-		var w2 = w * (0.33 + (0.5 - Math.random()) * 0.2));
-		var w3 = w * (1 - w1 - w2);
-		var h1 = h * (0.5 + (0.5 - Math.random()) * 0.3));
-		var h2 = h * (1 - h1);
+		var w1 = w * (0.33 );
+		var w2 = w * (0.33 );
+		var w3 = w - w1 - w2;
+		var h1 = h * (0.5 );
+		var h2 = h - h1;
+
+		console.log(w,w1,w2,w3);
+		console.log(h,h1,h2);
 
 		this.points = [
-		//0
-			[],
 		//1
 			tl,
 		//2
@@ -40,43 +41,53 @@ function Ripple(center, points, bounds){
 			[tl[0] + w1 + (w2 / 2), tl[1] - amp()],
 		//5
 			[tl[0] + w1 + w2, tl[1]],
-		//6
+		//6 problem
 			[tl[0] + w1 + w2 + (w3 / 2), tl[1] - amp()],
 		//7
 			tr,
 		//8
 			[tr[0] + amp(), tr[1] + (h1 / 2)],
 		//9
-			[tr[0], tr[1]],
+			[tr[0], tr[1] + h1],
 		//10
-			[ , ],
+			[tr[0] + amp(), tr[1] + h1 + (h2 / 2)],
 		//11
-			[ , ],
+			br,
 		//12
-			[ , ],
+			[br[0] - (w1 / 2), br[1] + amp()],
 		//13
-			[ , ],
+			[br[0] - w1, br[1]],
 		//14
-			[ , ],
+			[br[0] - w1 - (w2 / 2), br[1] + amp()],
 		//15
-			[ , ],
-		//16
-			[ , ],
+			[br[0] - w1 - w2, br[1]],
+		//16 problem
+			[br[0] - w1 - w2 - (w3 / 2), br[1] + amp()],
 		//17
-			[ , ],
+			bl,
 		//18
-			[ , ],
+			[bl[0] - amp(), bl[1] - (h1 / 2)],
 		//19
-			[ , ],
+			[bl[0], bl[1] - h1],
 		//20
-			[ , ],
+			[bl[0] - amp(), bl[1] - (h1 - (h2 / 2))],
 		//21
-			[ , ]
+			tl
 		];
 	}
 	else {
 
 	}
+}
+Ripple.prototype.getCurveVerteces = function(){
+	var returnArray = [];
+	returnArray.push(this.points[19]);
+	this.points.forEach(function(e){
+		returnArray.push(e);
+	});
+	returnArray.push(this.points[1]);
+
+	return returnArray;
 }
 
 Ripple.prototype.oscillate = function(){
@@ -87,30 +98,29 @@ Ripple.prototype.oscillate = function(){
 // scrollEnd is similar
 // scrollFactor is a ratio comparing user scroll speed to the speed at which Ripple Group should grow
 // highWaterMark tracks whether user has scrolled enough for new animation
-function RippleGroup(scrollStart, scrollEnd, scrollFactor, domElement){
+function RippleGroup(domElement, scrollFactor){
 	this.el = document.querySelector(domElement);
 	this.scrollStart = this.el.offsetTop - originY - 380;
-	this.scrollEnd = this.scrollStart + this.offsetHeight + (380 * 2);
+	this.scrollEnd = this.scrollStart + this.el.offsetHeight + (380 * 2);
 	this.scrollFactor = scrollFactor;
 	this.highWaterMark = scrollState(); //default initial
 
-	this.bounds = {
-		tl: function(){
-			return [this.el.offsetLeft, this.el.offsetTop];
-		},
-		tr: function(){
-			return [this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop];
-		},
-		br: function(){
-			return [this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop + this.el.offsetHeight];
-		},
-		bl: function(){
-			return [this.el.offsetLeft, this.el.offsetTop + this.el.offsetHeight];
-		}
-	}
+	// get div rectangle boundaries
+	this.tl = function(){
+		return [this.el.offsetLeft, this.el.offsetTop];
+	};
+	this.tr = function(){
+		return [this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop];
+	};
+	this.br = function(){
+		return [this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop + this.el.offsetHeight];
+	};
+	this.bl = function(){
+		return [this.el.offsetLeft, this.el.offsetTop + this.el.offsetHeight];
+	};
 	this.center = function(){
-		return [this.offsetLeft + (this.offsetWidth / 2), this.offsetLeft + (this.offsetWidth / 2)];
-	}
+		return [this.el.offsetLeft + (this.el.offsetWidth / 2), this.el.offsetLeft + (this.el.offsetWidth / 2)];
+	};
 	this.prevCenter = null;
 
 	this.ripples = [];
@@ -148,12 +158,12 @@ RippleGroup.nudgeRipples = function(){
 RippleGroup.prototype.makeRipple = function(){
 	var cen = this.center();
 	if (this.ripples[0]) {
-		var bounds = [this.bounds.tl(), this.bounds.tr(), this.bounds.br(), this.bounds.bl()];
-		var ripple = new Ripple(cen, null, bounds);
-	}
-	else {
 		var points = this.ripples[this.ripples.length - 1].points;
 		var ripple = new Ripple(cen, points);
+	}
+	else {
+		var bounds = [this.tl(), this.tr(), this.br(), this.bl()];
+		var ripple = new Ripple(cen, null, bounds);
 	}
 	this.ripples.push(ripple);
 }
@@ -172,56 +182,64 @@ RippleGroup.prototype.oscillate = function(){
 	}
 }
 
-
-
-
 function setup() {  // setup() runs once
-	createCanvas(window.innerWidth, window.innerHeight);
+	createCanvas(window.innerWidth, 4000);
   frameRate(30);
 }
 
 function draw() {  // draw() loops forever, until stopped
+	
+	if (window.ponderRipples) {
+		ponderRipples.ripples.forEach(function(ripple){
+			beginShape();
+			stroke('#00f');
+			strokeWeight(0.1);
+			var vertex = ripple.getCurveVerteces();
+			vertex.forEach(function(e){
+				curveVertex(e[0], e[1]);
+			})
+			endShape();
+		})
+	}
+
 	beginShape();
-		stroke('#f00');
-		strokeWeight(0.1);
-		curveVertex(0,100);
-		curveVertex(100,0);
-		curveVertex(200,100);
-		curveVertex(100,200);
-		curveVertex(0,100);
-		curveVertex(100,0);
-		curveVertex(200,100);
+				stroke('#00f');
+				strokeWeight(0.1);
+	curveVertex(84,  91);
+	curveVertex(84,  91);
+	curveVertex(68,  19);
+	curveVertex(21,  17);
+	curveVertex(1000, 1000);
+	curveVertex(1000, 1000);
 	endShape();
-
-
 }
 
 
 
 
-// 	$(window).on('mousewheel', function(event) {
-// 		// console.log(event)
-// 		if (event.originalEvent.wheelDeltaY < 0) {
-// 			for (var i = 0; i < Math.floor(Y.incFactor - 39); i++) {
-// 			var path = new Path();
-// 			path.strokeColor = Y.color;
-// 			path.strokeWidth = 0.5;
+	// $(window).on('mousewheel', function(event) {
+	// 	// console.log(event)
+	// 	if (event.originalEvent.wheelDeltaY < 0) {
+	// 		for (var i = 0; i < Math.floor(Y.incFactor - 39); i++) {
+	// 		var path = new Path();
+	// 		path.strokeColor = Y.color;
+	// 		path.strokeWidth = 0.5;
 
-// 			path.add(new Point(0, Y.g + Y._1));
-// 			path.add(new Point(vw() * 0.25, Y.g + Y._2));
-// 			path.add(new Point(vw() * 0.5, Y.g + Y._3));
-// 			path.add(new Point(vw() * 0.75, Y.g + Y._4));
-// 			path.add(new Point(vw(), Y.g + Y._5));
-// 			path.smooth();
-// 			view.update();
+	// 		path.add(new Point(0, Y.g + Y._1));
+	// 		path.add(new Point(vw() * 0.25, Y.g + Y._2));
+	// 		path.add(new Point(vw() * 0.5, Y.g + Y._3));
+	// 		path.add(new Point(vw() * 0.75, Y.g + Y._4));
+	// 		path.add(new Point(vw(), Y.g + Y._5));
+	// 		path.smooth();
+	// 		view.update();
 
-// 			Y.increment();
-// 			}
-// 		}
-// 		else {
+	// 		Y.increment();
+	// 		}
+	// 	}
+	// 	else {
 
-// 		}
-// 	})
+	// 	}
+	// })
 
 
 
