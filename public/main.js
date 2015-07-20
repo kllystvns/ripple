@@ -38,10 +38,10 @@ window.onload = function(){
 	bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
 	bodyOfWater.push(new RippleGroup('#ripple', 30, 2500, 30, null, '#98b'));
 	bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
-	bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99c'));
-	bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#89b'));
-	bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#7aa'));
-	bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#6ba'));
+	bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99d'));
+	bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79c'));
+	bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#6bb'));
+	bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#5da'));
 
 	setTimeout(doneLoading, 10);
 }
