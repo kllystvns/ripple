@@ -33,38 +33,18 @@ var doneLoading = function() {
 window.onload = function(){
 	$(window).scrollTop(originY);
 
-	window.ponderRipples = new RippleGroup('#ponder', 1);
-	ponderRipples.makeRipple();
+	window.bodyOfWater = [];
+	bodyOfWater.push(new RippleGroup('#ripple', 1, null, '#98b'));
+	bodyOfWater.push(new RippleGroup('#user', 1, null, '#a8b'));
+	bodyOfWater.push(new RippleGroup('#ponder', 1, null, '#99b'));
+	bodyOfWater.push(new RippleGroup('#see', 1, null, '#99c'));
+	bodyOfWater.push(new RippleGroup('#hear', 1, null, '#89b'));
+	bodyOfWater.push(new RippleGroup('#learn', 1, null, '#7aa'));
+	bodyOfWater.push(new RippleGroup('#read', 1, null, '#6ba'));
 
-	// function setup() {  // setup() runs once
-	// 	createCanvas(window.innerWidth, 4000);
-	//   frameRate(30);
-	// }
-
-	// function draw() {  // draw() loops forever, until stopped
-		
-	// 	ponderRipples.ripples.forEach(function(ripple){
-	// 		beginShape();
-	// 		stroke('#00f');
-	// 		strokeWeight(0.1);
-	// 		var vertex = ripple.getCurveVerteces();
-	// 		vertex.forEach(function(e){
-	// 			curveVertex(e[0], e[1]);
-	// 		})
-	// 		endShape();
-	// 	})
-
-	// 	beginShape();
-	// 				stroke('#00f');
-	// 				strokeWeight(0.1);
-	// 	curveVertex(84,  91);
-	// 	curveVertex(84,  91);
-	// 	curveVertex(68,  19);
-	// 	curveVertex(21,  17);
-	// 	curveVertex(1000, 1000);
-	// 	curveVertex(1000, 1000);
-	// 	endShape();
-	// }
+	bodyOfWater.forEach(function(rippleGroup){
+		rippleGroup.makeRipple();
+	});
 
 
 	setTimeout(doneLoading, 10);

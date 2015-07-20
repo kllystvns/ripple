@@ -1,13 +1,20 @@
+@font-face {
+	font-family: 'Syncopate';
+	src: url('fonts/Syncopate-Bold.ttf');
+}
+
 * {
 	margin: 0;
 	padding: 0;
 	list-style: none;
 	text-decoration: none;
+	line-height: 1;
+	color: #656;
 }
 
 body {
 	width: 100vw;
-	height: 4000px;
+	height: 4600px;
 }
 
 #loading {
@@ -26,14 +33,59 @@ canvas {
 	z-index: -10;
 }
 
+
+.vessel {
+	position: absolute;
+	/*margin: 50px;*/
+	width: 520px;
+	min-height: 220px;
+
+}
+.vessel li {
+}
+
 input {
 	visibility: hidden;
 }
 
+#user {
+	left: 50px;
+	top: 50px;
+}
 #user input {
 	visibility: visible;
 }
 
-#ponder {
-	margin-top: 500px;
+#ripple {
+	position: absolute;
+	top: 550px;
+	line-height: 0.8;
+	padding-top: 10px;
+	font-family: 'Syncopate';
+	font-size: 130px;
+	color: #908c9e;
+	right: 400px;
 }
+
+#ponder {
+	left: 50px;
+	top: 1450px;
+}
+#see {
+	right: 50px;
+	top: 2050px;
+}
+#hear {
+	left: 50px;
+	top: 2650px;
+}
+#learn {
+	right: 50px;
+	top: 3250px;
+}
+#read {
+	left: 50px;
+	top: 3850px;
+}
+
+
