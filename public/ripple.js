@@ -10,7 +10,7 @@ var scrollState = function(){
 
 //~~~ RIPPLE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function Ripple(center, points, amplitude, bounds, color){
+function Ripple(center, growthFactor, vertices, amplitude, bounds, color){
 	this.color = color || '#00f';
 	this.amplitude = amplitude;
 
@@ -90,8 +90,31 @@ function Ripple(center, points, amplitude, bounds, color){
 		}, this);
 	}
 	else {
-
+		this.vertices = this.expand(center, vertices, growthFactor);
 	}
+}
+Ripple.prototype.expand = function(center, prevVertices, growthFactor){
+		// fix this
+		var vertices = prevVertices.map(function(v){
+			var copy = {p: [], v: [], m: null};
+			copy.p[0] = v.p[0];
+			copy.p[1] = v.p[1];
+			copy.v[0] = v.v[0];
+			copy.v[1] = v.v[1];
+			copy.m = v.m;
+			return copy;
+		});
+		var c = center;
+		for (var i = 0; i < vertices.length; i++){
+			var v1 = createVector(vertices[i].p[0], vertices[i].p[1]);
+			var vc = createVector(c[0], c[1]);
+			var v2 = v1.sub(vc);
+			v2.setMag(growthFactor);
+
+			vertices[i].p[0] += v2.x;
+			vertices[i].p[1] += v2.y;
+		}
+		return vertices;
 }
 Ripple.prototype.amp = function(amplitude){
 	return Math.random() * amplitude / 2 + amplitude;
@@ -99,9 +122,9 @@ Ripple.prototype.amp = function(amplitude){
 Ripple.prototype.draw = function(){
 	var vertices = this.vertices;
 	// P5
-	noFill();
-	stroke(this.color);
-	strokeWeight(strokeGlobal);
+		noFill();
+		stroke(this.color);
+		strokeWeight(strokeGlobal);
 	for (var i = 0; i < vertices.length; i++) {
 		var j = i + 1;
 		if (i === vertices.length - 1) {
@@ -137,13 +160,18 @@ Ripple.prototype.oscillate = function(){
 
 // ~~~ RIPPLE GROUP ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function RippleGroup(domElement, scrollFactor, amplitude, color){
+function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color){
 	this.el = document.querySelector(domElement);
 	this.color = color;
 	this.scrollStart = this.el.offsetTop - originY - 380;
-	this.scrollEnd = this.scrollStart + this.el.offsetHeight + (380 * 2);
-	this.scrollFactor = scrollFactor;
+	this.scrollEnd = scrollEnd || this.scrollStart + this.el.offsetHeight + (380 * 2);
+	
+	this.scrollFactor = scrollFactor || 50;
 	this.highWaterMark = scrollState(); //default initial
+	this.prevGrowthFactor = growthFactor || 10;
+	this.growthFactor = function(){
+		return this.prevGrowthFactor * (1 + (this.ripples.length / 22))
+	}
 	this.amplitude = amplitude || 20;
 
 	// get div rectangle boundaries
@@ -160,7 +188,7 @@ function RippleGroup(domElement, scrollFactor, amplitude, color){
 		return [this.el.offsetLeft, this.el.offsetTop + this.el.offsetHeight];
 	};
 	this.center = function(){
-		return [this.el.offsetLeft + (this.el.offsetWidth / 2), this.el.offsetLeft + (this.el.offsetWidth / 2)];
+		return [this.el.offsetLeft + (this.el.offsetWidth / 2), this.el.offsetTop + (this.el.offsetHeight / 2)];
 	};
 	this.prevCenter = null;
 
@@ -175,6 +203,7 @@ RippleGroup.prototype.isActive = function(){
 //needs to happen on scroll
 RippleGroup.prototype.update = function(){
 	if (this.isActive) {
+		// NOT READY YET
 		if (this.center() !== this.prevCenter) {
 			this.nudgeRipples();
 			this.prevCenter = this.center();
@@ -187,33 +216,32 @@ RippleGroup.prototype.update = function(){
 		if (scrollState() < this.highWaterMark - this.scrollFactor) {
 			this.highWaterMark = scrollState();
 			this.removeRipple();
-		}	
+		}
 	}
 }
-RippleGroup.nudgeRipples = function(){
+// NOT READY YET
+RippleGroup.prototype.nudgeRipples = function(){
 	var cen = this.center();
 	for (var i = 0; i < this.ripples.length; i++) {
-		this.ripples[i].newCenter(cen);
+		// this.ripples[i].newCenter(cen);
 	}
 }
+//function Ripple(center, growthFactor, vertices, amplitude, bounds, color)
 RippleGroup.prototype.makeRipple = function(){
 	var cen = this.center();
 	if (this.ripples[0]) {
-		var points = this.ripples[this.ripples.length - 1].points;
-		var ripple = new Ripple(cen, points);
+		var vertices = this.ripples[this.ripples.length - 1].vertices;
+		var ripple = new Ripple(cen, this.growthFactor(), vertices, this.amplitude, null, this.color);
 	}
 	else {
 		var bounds = [this.tl(), this.tr(), this.br(), this.bl()];
-		var ripple = new Ripple(cen, null, this.amplitude, bounds, this.color);
+		var ripple = new Ripple(cen, null, null, this.amplitude, bounds, this.color);
 	}
 	this.ripples.push(ripple);
 }
 RippleGroup.prototype.removeRipple = function(){
 	this.ripples.pop();
 }
-
-
-
 //needs to happen on frame
 RippleGroup.prototype.oscillate = function(){
 	if (this.isActive) {
@@ -222,6 +250,16 @@ RippleGroup.prototype.oscillate = function(){
 		}
 	}
 }
+
+
+$(window).on('mousewheel', function(event){
+	bodyOfWater.forEach(function(rippleGroup){
+		rippleGroup.update();
+	});
+	// bodyOfWater[1].update();
+})
+
+
 
 function setup() {  // setup() runs once
 	createCanvas(window.innerWidth, 4600);
@@ -235,18 +273,11 @@ function draw() {  // draw() loops forever, until stopped
 		bodyOfWater.forEach(function(rippleGroup){
 			rippleGroup.ripples.forEach(function(ripple){
 				ripple.draw();
-				noLoop();
+				// noLoop();
 			})	
 		});
 	}
-
-	// noFill()
-	// stroke('#00f')
-	// beginShape()
-	// vertex(100, 500);
-	// bezierVertex(100, 400, 300, 400, 400, 500)
-	// bezierVertex(500,600,600,600,700,500)
-	// endShape();
+	//blendMode()
 
 }
 

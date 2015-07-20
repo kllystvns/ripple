@@ -1,3 +1,11 @@
+var clone = function(object){
+	var newObject = {}
+	for (attr in object) {
+		newObject[attr] = object[attr];
+	}
+	return newObject;
+}
+
 var User = Backbone.Model.extend({
 	initialize: function(){
 
@@ -164,11 +172,13 @@ var DropletView = Backbone.View.extend({
 		'click .delete': 'destroy',
 		'mouseover': function(){
 			this.$('input').css('visibility', 'visible');
+			// this.$('.delete').css('visibility', 'visible');
 		},
 		'mouseout': function(){
 			if (this.$('input').val() === '') {
 				this.$('input').css('visibility', 'hidden');
 			}
+			// this.$('.delete').css('visibility', 'hidden');
 		}
 	}
 }); // end ItemView
@@ -187,6 +197,7 @@ var VesselView = Backbone.View.extend({
 		this.render();
 	},
 	render: function(){
+		this.$el.append(this.template);
 		_.each(this.collection.models, function(e){
 			var currentDroplet = new DropletView({model: e});
 			var li = currentDroplet.render();
@@ -197,19 +208,24 @@ var VesselView = Backbone.View.extend({
 
 // Specialized Vessel views depending on content
 var PonderView = VesselView.extend({
-	el: '#ponder'
+	el: '#ponder',
+	template: '<li class="title"><h2>REFLECT</h2></li>'
 });
 var SeeView = VesselView.extend({
-	el: '#see'
+	el: '#see',
+	template: '<li class="title"><h2>SEE</h2></li>'
 });
 var HearView = VesselView.extend({
-	el: '#hear'
+	el: '#hear',
+	template: '<li class="title"><h2>HEAR</h2></li>'
 });
 var LearnView = VesselView.extend({
-	el: '#learn'
+	el: '#learn',
+	template: '<li class="title"><h2>LEARN</h2></li>'
 });
 var ReadView = VesselView.extend({
-	el: '#read'
+	el: '#read',
+	template: '<li class="title"><h2>READ</h2></li>'
 });
 
 

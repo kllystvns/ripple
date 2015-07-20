@@ -26,13 +26,17 @@ var userShowTemplate = '\
 
 var dropletShowTemplate = '\
 		<% if (type === "link") { %> \
+			<div class="link"> \
 			<a class="text" href="<%= url %>"><%= name ? name : url %></a>	\
+			</div> \
 		<% } else if (type === "quote") { %>	\
-			<p class="text"><%= text %></p><p class="author"><%= author %></p>	\
+			<div class="quote"><p class="text"><%= text %></p><p class="author">--<%= author %></p></div>	\
 		<% } else if (type === "soundcloud") { %>	\
+			<div class="soundcloud"> \
 			<p class="text">not working yet</p>	\
+			</div> \
 		<% } %>	\
-		<button class="delete">X</button>';
+		<button class="delete">×</button>';
 
 var dropletEditTemplate = '\
 		<input class="text" type="text" placeholder="add something"> \

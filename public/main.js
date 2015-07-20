@@ -34,17 +34,18 @@ window.onload = function(){
 	$(window).scrollTop(originY);
 
 	window.bodyOfWater = [];
-	bodyOfWater.push(new RippleGroup('#ripple', 1, null, '#98b'));
-	bodyOfWater.push(new RippleGroup('#user', 1, null, '#a8b'));
-	bodyOfWater.push(new RippleGroup('#ponder', 1, null, '#99b'));
-	bodyOfWater.push(new RippleGroup('#see', 1, null, '#99c'));
-	bodyOfWater.push(new RippleGroup('#hear', 1, null, '#89b'));
-	bodyOfWater.push(new RippleGroup('#learn', 1, null, '#7aa'));
-	bodyOfWater.push(new RippleGroup('#read', 1, null, '#6ba'));
+	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
+	bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
+	bodyOfWater.push(new RippleGroup('#ripple', 30, 2500, 30, null, '#98b'));
+	bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
+	bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99c'));
+	bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#89b'));
+	bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#7aa'));
+	bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#6ba'));
 
-	bodyOfWater.forEach(function(rippleGroup){
-		rippleGroup.makeRipple();
-	});
+	// bodyOfWater.forEach(function(rippleGroup){
+	// 	rippleGroup.makeRipple();
+	// });
 
 
 	setTimeout(doneLoading, 10);

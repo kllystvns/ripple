@@ -2,6 +2,10 @@
 	font-family: 'Syncopate';
 	src: url('fonts/Syncopate-Bold.ttf');
 }
+@font-face {
+	font-family: 'OpenSans';
+	src: url('fonts/OpenSans-Regular.ttf');
+}
 
 * {
 	margin: 0;
@@ -10,6 +14,17 @@
 	text-decoration: none;
 	line-height: 1;
 	color: #656;
+	font-size: 18px;
+	font-family: 'OpenSans';
+}
+*:focus {
+	outline: none;
+}
+div, h2 {
+	cursor: default;
+}
+p {
+	cursor: text;
 }
 
 body {
@@ -37,20 +52,82 @@ canvas {
 .vessel {
 	position: absolute;
 	/*margin: 50px;*/
-	width: 520px;
-	min-height: 220px;
+	max-width: 520px;
+	min-width: 380px;
+	min-height: 160px;
 
 }
 .vessel li {
+	display: flex;
+	flex-direction: row;
+	margin: 4px;
+	border: solid 2px transparent;
+	background: rgba(255,255,255,0.8);
 }
+a, p, button, input {
+	margin: 4px;
+}
+.vessel li:hover {
+	background-color: #f8fbfb;
+	border: dashed 2px #c7c5e9;
+}
+.vessel a:hover {
+	color: #289;
+}
+.vessel .link {
+	flex-grow: 2;
+}
+.vessel li.title {
+	border-color: transparent; 
+	background: none;
+	margin: 6px;
+	font-size: 26px;
+}
+.vessel li.title:hover {
+	border-color: transparent; 
+}
+
+
 
 input {
 	visibility: hidden;
+	flex-grow: 2;
+	background-color: #eaf1fb;
+	border: none;
+}
+.delete {
+	/*visibility: hidden;*/
+}
+button {
+	width: 24px;
+	height: 24px;
+	flex: none;
+	border: none;
+	background-color: transparent;
+	font-size: 20px;
+}
+button:hover {
+	background-color: #e2f1fb;
 }
 
 #user {
 	left: 50px;
 	top: 50px;
+	display: flex;
+	flex-direction: column;
+}
+#user * {
+	margin: 4px;
+	flex-grow: 1;
+}
+#user button {
+	width: auto;
+	padding: 4px;
+	padding-right: 6px;
+	padding-bottom: 6px;
+}
+#user button:hover {
+	color: #289;
 }
 #user input {
 	visibility: visible;
