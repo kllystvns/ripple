@@ -1,3 +1,4 @@
+// object cloning utility
 var clone = function(object){
 	var newObject = {}
 	for (attr in object) {
@@ -110,11 +111,14 @@ var UserView = Backbone.View.extend({
 	}
 })
 
-
+// ~~~ DROPLET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Vessels contain Droplets
 // Each list item is controlled individually without using a form
 // Droplets are instantiated by Vessels
+
+// ~~~ DROPLET ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 var Droplet = Backbone.Model.extend({
 	idAttribute: '_id',
 	create: function(data){
@@ -183,6 +187,9 @@ var DropletView = Backbone.View.extend({
 	}
 }); // end ItemView
 
+
+
+// ~~~ VESSELL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 var Vessel = Backbone.Collection.extend({
 	model: Droplet,

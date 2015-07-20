@@ -252,12 +252,14 @@ RippleGroup.prototype.oscillate = function(){
 }
 
 
+//~~~ ON SCROLL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 $(window).on('mousewheel', function(event){
 	bodyOfWater.forEach(function(rippleGroup){
 		rippleGroup.update();
 	});
-	// bodyOfWater[1].update();
 })
+
 
 
 
@@ -265,6 +267,8 @@ function setup() {  // setup() runs once
 	createCanvas(window.innerWidth, 4600);
   frameRate(30);
 }
+
+//~~~ ON FRAME ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function draw() {  // draw() loops forever, until stopped
 	clear();
@@ -283,116 +287,3 @@ function draw() {  // draw() loops forever, until stopped
 
 
 
-
-	// $(window).on('mousewheel', function(event) {
-	// 	// console.log(event)
-	// 	if (event.originalEvent.wheelDeltaY < 0) {
-	// 		for (var i = 0; i < Math.floor(Y.incFactor - 39); i++) {
-	// 		var path = new Path();
-	// 		path.strokeColor = Y.color;
-	// 		path.strokeWidth = 0.5;
-
-	// 		path.add(new Point(0, Y.g + Y._1));
-	// 		path.add(new Point(vw() * 0.25, Y.g + Y._2));
-	// 		path.add(new Point(vw() * 0.5, Y.g + Y._3));
-	// 		path.add(new Point(vw() * 0.75, Y.g + Y._4));
-	// 		path.add(new Point(vw(), Y.g + Y._5));
-	// 		path.smooth();
-	// 		view.update();
-
-	// 		Y.increment();
-	// 		}
-	// 	}
-	// 	else {
-
-	// 	}
-	// })
-
-
-
-
-
-
-
-
-
-// paper.install(window);
-// window.onload = function() {
-// 	// Setup directly from canvas id:
-// 	paper.setup('myCanvas');
-
-// 	var path = new Path();
-// 	path.strokeColor = 'black';
-// 	var start = new Point(100, 100);
-// 	path.moveTo(start);
-// 	path.lineTo(start.add([ 200, -50 ]));
-	
-
-
-// 	var vw = function() {
-// 		return view.size.width;
-// 	}
-
-// 	var vh = function() {
-// 		return view.size.height;
-// 	}
-
-// 	function YFactor() {
-// 		this.incFactor = 40;
-// 		this.g = 0;
-// 		this._1 = 0;
-// 		this._2 = 0;
-// 		this._3 = 0;
-// 		this._4 = 0;
-// 		this._5 = 0;
-// 		this.green = 0;
-// 		this.blue = 255;
-// 		this.color = 'rgb(50,30,220)';
-// 	}
-
-// 	YFactor.prototype.increment = function(){
-// 		this.incFactor += 0.01;
-// 		this.g += 1 - (this.incFactor / 1.85);
-// 		this._1 += 5 + (Math.random() * this.incFactor / 1.05);
-// 		this._2 += 5 + (Math.random() * this.incFactor / 1.05);
-// 		this._3 += 5 + (Math.random() * this.incFactor / 1.05);
-// 		this._4 += 5 + (Math.random() * this.incFactor / 1.05);
-// 		this._5 += 5 + (Math.random() * this.incFactor / 1.05);
-// 		this.green += 0.2;
-// 		this.blue -= 0.2;
-// 		this.color = 'rgb(50,' + Math.floor(this.green) + ',' + Math.floor(this.blue) + ')';
-// 	}
-
-// 	var Y = new YFactor();
-// 	Y.increment();
-
-// 	var X = 0;
-
-
-// 	$(window).on('mousewheel', function(event) {
-// 		// console.log(event)
-// 		if (event.originalEvent.wheelDeltaY < 0) {
-// 			for (var i = 0; i < Math.floor(Y.incFactor - 39); i++) {
-// 			var path = new Path();
-// 			path.strokeColor = Y.color;
-// 			path.strokeWidth = 0.5;
-
-// 			path.add(new Point(0, Y.g + Y._1));
-// 			path.add(new Point(vw() * 0.25, Y.g + Y._2));
-// 			path.add(new Point(vw() * 0.5, Y.g + Y._3));
-// 			path.add(new Point(vw() * 0.75, Y.g + Y._4));
-// 			path.add(new Point(vw(), Y.g + Y._5));
-// 			path.smooth();
-// 			view.update();
-
-// 			Y.increment();
-// 			}
-// 		}
-// 		else {
-
-// 		}
-// 	})
-
-
-// 	view.draw();
-// } // window.onload

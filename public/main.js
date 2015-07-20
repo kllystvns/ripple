@@ -43,10 +43,5 @@ window.onload = function(){
 	bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#7aa'));
 	bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#6ba'));
 
-	// bodyOfWater.forEach(function(rippleGroup){
-	// 	rippleGroup.makeRipple();
-	// });
-
-
 	setTimeout(doneLoading, 10);
 }
