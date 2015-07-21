@@ -1,6 +1,6 @@
 var originY = 500;
 // scroll to origin in main.js
-var strokeGlobal = 0.5;
+var strokeGlobal = 0.9;
 
 var scrollState = function(){
 	var quadrant = (window.scrollY < originY) ? -1 : 1;
