@@ -8,7 +8,7 @@ var userNewTemplate = '\
 		<button class="create">GET STARTED</button>';
 
 var userLoginTemplate = '\
-		<p>Hello, user! again</p> \
+		<p>Hello, user!</p> \
 		<p class="message"><%= message %></p> \
 		<input type="text" id="username" placeholder="username"> \
 		<input type="password" id="password" placeholder="password"> \
