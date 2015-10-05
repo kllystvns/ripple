@@ -18,7 +18,19 @@ var User = Backbone.Model.extend({
 		name: null
 	},
 	create: function(data){
-		user.save(data, {
+		data.userMode = 'full';
+		this.save(data, {
+			success: function(model, response){
+				if (response.redirect) {
+					window.location = response.redirect;
+				}
+			},
+			error: function(model, response){}
+		});
+	},
+	createGuest: function(){
+		data = {userMode: 'guest'};
+		this.save(data, {
 			success: function(model, response){
 				if (response.redirect) {
 					window.location = response.redirect;
@@ -93,6 +105,9 @@ var UserView = Backbone.View.extend({
 		};
 		this.model.create(data);
 	},
+	createGuest: function(){
+		this.model.createGuest();
+	},
 	authenticate: function(){
 		var data = {
 			username: $('#username').val(),
@@ -106,6 +121,7 @@ var UserView = Backbone.View.extend({
 	events: {
 		'click .signup': 'renderNew',
 		'click .create': 'create',
+		'click .guest': 'createGuest',
 		'click .login': 'authenticate',
 		'click .logout': 'logout'
 	}
@@ -189,7 +205,7 @@ var DropletView = Backbone.View.extend({
 
 
 
-// ~~~ VESSELL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// ~~~ VESSEL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 var Vessel = Backbone.Collection.extend({
 	model: Droplet,

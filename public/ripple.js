@@ -210,11 +210,11 @@ RippleGroup.prototype.update = function(){
 		}
 
 		if (scrollState() > this.highWaterMark + this.scrollFactor) {
-			this.highWaterMark = scrollState();
+			this.highWaterMark = Math.floor(scrollState() / this.scrollFactor) * this.scrollFactor;
 			this.makeRipple();
 		}
-		if (scrollState() < this.highWaterMark - this.scrollFactor) {
-			this.highWaterMark = scrollState();
+		if (scrollState() < this.highWaterMark) {
+			this.highWaterMark = Math.floor(scrollState() / this.scrollFactor) * this.scrollFactor;
 			this.removeRipple();
 		}
 	}

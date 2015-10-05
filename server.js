@@ -49,11 +49,14 @@ MongoClient.connect(MongoURI, function(err, db) {
 	}
 
 // LANDING PAGE & AUTHENTICATION
+
 	app.get('/', function(req, res) {
+	// UNAUTHENTICATED or NEW USER
 		if (!req.session.user_id) {
 			console.log('gatekept')
 			res.redirect('/session');
 		}
+	// AUTHENTICATED
 		else {
 			console.log('gateunkept')
 			console.log('sessionid' + req.session.user_id)
@@ -65,7 +68,6 @@ MongoClient.connect(MongoURI, function(err, db) {
 				}
 				Droplets.find({user_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
 					var droplets = results;
-					console.log(droplets)
 					res.render('index.ejs', { userData: user, dropletsData: droplets, isAuthenticated: true });
 				})
 			})
@@ -112,22 +114,6 @@ MongoClient.connect(MongoURI, function(err, db) {
 
 // CREATE NEW USER
 	app.post('/users', function(req, res){
-		var error;
-		if (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7) {
-			error = 'invalid password';
-		}
-		Users.findOne({username: req.body.username}, function(err, result){
-			if (result || error) {
-				console.log('here')
-				if (result || req.body.username === '') { 
-					error = 'username is unavailable';
-				}
-				res.json({ message: error });
-			}
-			else {
-				createUser(req.body);
-			}
-		});
 
 		var createUser = function(data){
 			var userData = {};
@@ -142,13 +128,44 @@ MongoClient.connect(MongoURI, function(err, db) {
 
 				var dropletsData = [];
 				for (var i = 0; i < defaultDroplets.length; i++) {
-					var drop = clone(defaultDroplets[i].user_id);
+					var drop = clone(defaultDroplets[i]);
+				console.log(1)
+				console.log(drop);
 					drop.user_id = result._id;
+				console.log(2)
+				console.log(drop);
 					dropletsData.push(drop);
 				}
 				Droplets.insert(dropletsData, function(){
 					res.json({redirect: '/'});
 				})
+			});
+		}
+
+		// NEW GUEST/ANONYMOUS USER
+		if (req.body.userMode === 'guest') {
+			var data = req.body;
+			data.username = null;
+			data.email = null;
+			data.password = 'password';
+			createUser(data);
+		}
+		// NEW FULL USER
+		else {
+			var error;
+			if (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7) {
+				error = 'invalid password';
+			}
+			Users.findOne({username: req.body.username}, function(err, result){
+				if (result || error) {
+					if (result || req.body.username === '') { 
+						error = 'username is unavailable';
+					}
+					res.json({ message: error });
+				}
+				else {
+					createUser(req.body);
+				}
 			});
 		}
 	})

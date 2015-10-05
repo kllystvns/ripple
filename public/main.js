@@ -36,7 +36,7 @@ window.onload = function(){
 	window.bodyOfWater = [];
 	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
 	bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
-	bodyOfWater.push(new RippleGroup('#ripple', 30, 2500, 30, null, '#98b'));
+	bodyOfWater.push(new RippleGroup('#ripple', 30, 3500, 30, null, '#98b'));
 	bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
 	bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99d'));
 	bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79c'));
