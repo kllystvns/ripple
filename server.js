@@ -120,6 +120,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 			userData.username = data.username;
 			userData.email = data.email;
 			userData.name = data.name;
+			userData.userMode = data.userMode;
 			var salt = bcrypt.genSaltSync(10);
 			userData.passCrypt = bcrypt.hashSync(data.password, salt);
 			Users.insert(userData, function(err, result){
@@ -148,6 +149,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 			data.username = null;
 			data.email = null;
 			data.password = 'password';
+			data.userMode = 'guest';
 			createUser(data);
 		}
 		// NEW FULL USER
@@ -164,11 +166,57 @@ MongoClient.connect(MongoURI, function(err, db) {
 					res.json({ message: error });
 				}
 				else {
-					createUser(req.body);
+					var data = req.body;
+					data.userMode = 'full';
+					createUser(data);
 				}
 			});
 		}
 	})
+
+// UPDATE USER
+	app.put('/users/:id', function(req, res){
+
+		var updateUser = function(data){
+			var newUserData = {};
+			data.username ? newUserData.username = data.username : false;
+			data.email ? newUserData.email = data.email : false ;
+			data.name ? newUserData.name = data.name : false;
+			newUserData.userMode = 'full';
+			if (data.password) {
+				var salt = bcrypt.genSaltSync(10);
+				newUserData.passCrypt = bcrypt.hashSync(data.password, salt);
+			}
+			console.log(data);
+			Users.updateOne(
+				{_id: new ObjectID(req.session.user_id)},
+				{$set: newUserData},
+				function(err, result){
+					Users.find({_id: new ObjectID(req.session.user_id)}, {passCrypt: 0}).toArray(function(err, results){
+						var user = results[0];
+						res.json(user);
+					});
+				}
+			);
+		}
+
+		var error;
+		if (req.body.password && (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7)) {
+			error = 'invalid password';
+		}
+		Users.findOne({username: req.body.username}, function(err, result){
+			if (result || error) {
+				if (result || req.body.username === '') { 
+					error = 'username is unavailable';
+				}
+				res.json({ message: error });
+			}
+			else {
+				updateUser(req.body);
+			}
+		});
+	})
+
 
 
 // CREATE A NEW DROPLET

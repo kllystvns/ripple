@@ -9,12 +9,12 @@
 	<script src="jquery/dist/jquery.js"></script>
 	<script src="backbone/backbone.js"></script>
 	<!-- <script src="paper/dist/paper-full.js"></script> -->
-	<script src="p5.js"></script>
+	<!--script src="p5.js"></script-->
 </head>
 <body>
 
-	<!-- <canvas id="myCanvas"></canvas> -->
-
+<!-- SVG 'container' for ripples -->
+	<svg id="svg-background" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="2000px" height="4600px" viewBox="0 0 2000 4600" enable-background="new 0 0 2000 4600" xml:space="preserve"></svg>
 
 	<div id="loading">LOADING</div>
 
@@ -36,9 +36,10 @@
 	<script>
 		window.user = new User(<%- JSON.stringify(userData) %>);
 		<% if (isAuthenticated === true) { %>
-			user.isAuthenticated = true
+			user.isAuthenticated = true;
+			user.set({id: user.attributes._id});
 		<% } else { %>
-			user.isAuthenticated = false
+			user.isAuthenticated = false;
 		<% } %>
 		window.droplets = <%- JSON.stringify(dropletsData) %>
 	</script>

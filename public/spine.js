@@ -8,9 +8,6 @@ var clone = function(object){
 }
 
 var User = Backbone.Model.extend({
-	initialize: function(){
-
-	},
 	urlRoot: '/users',
 	defaults: {
 		username: null,
@@ -23,6 +20,9 @@ var User = Backbone.Model.extend({
 			success: function(model, response){
 				if (response.redirect) {
 					window.location = response.redirect;
+				}
+				else {
+					model.trigger('syncAttempt', null, response);
 				}
 			},
 			error: function(model, response){}
@@ -38,6 +38,14 @@ var User = Backbone.Model.extend({
 			},
 			error: function(model, response){}
 		});
+	},
+	update: function(data){
+		this.save(data, {
+			success: function(model, response){
+				model.trigger('updated', null, response);
+			},
+			error: function(model, response){}
+		})
 	},
 	authenticate: function(data){
 		$.ajax({
@@ -71,30 +79,53 @@ var UserView = Backbone.View.extend({
 	templateNew: _.template(userNewTemplate),
 	templateLogin: _.template(userLoginTemplate),
 	templateShow: _.template(userShowTemplate),
+	templateEdit: _.template(userEditTemplate),
+	templateGuest: _.template(userGuestTemplate),
 	initialize: function(){
-		this.listenTo(this.model, 'sync', function(object, response){
+		this.listenTo(this.model, 'syncAttempt', function(object, response){
 			this.renderNew(null, response.message);
-		})
+		});
 		this.listenTo(this.model, 'loginAttempt', function(object, response){
 			this.renderLogin(null, response.message);
-		})
+		});
+		this.listenTo(this.model, 'updated', function(object, response){
+			this.model.set(response)
+			console.log('hey')
+			this.render(null, response);
+		});
 		this.render();
 	},
 	render: function(){
 		if (user.isAuthenticated === false) {
+			console.log(1)
 			this.renderLogin();
 		}
+		else if (user.attributes.userMode === 'guest') {
+			this.renderGuest();
+		}
 		else {
-			this.$el.html(this.templateShow(user.attributes) );
+			console.log(2)
+			this.$el.html(this.templateShow(this.model.attributes) );
 		}
 
 	},
 	// `event` will never be used, but is passed by jQuery
 	renderLogin: function(event, message){
+		console.log('here')
 		this.$el.html(this.templateLogin({message: '' || message}));
 	},
 	renderNew: function(event, message){
 		this.$el.html(this.templateNew({message: '' || message}));
+	},
+	renderEdit: function(event, message){
+		var data = this.model.attributes;
+		data.message = '' || message;
+		this.$el.html(this.templateEdit(data));
+	},
+	renderGuest: function(event, message){
+		var data = this.model.attributes;
+		data.message = '' || message;
+		this.$el.html(this.templateGuest(data));
 	},
 	create: function(){
 		var data = {
@@ -118,12 +149,24 @@ var UserView = Backbone.View.extend({
 	logout: function() {
 		this.model.logout();
 	},
+	update: function(){
+		var data = {
+			username: $('#username').val(),
+			email: $('#email').val(),
+			password: $('#password').val(),
+			passwordConfirm: $('#password-confirm').val(),
+			userMode: 'full'
+		};
+		this.model.update(data)
+	},
 	events: {
 		'click .signup': 'renderNew',
 		'click .create': 'create',
 		'click .guest': 'createGuest',
 		'click .login': 'authenticate',
-		'click .logout': 'logout'
+		'click .logout': 'logout',
+		'click .edit': 'renderEdit',
+		'click .update': 'update'
 	}
 })
 

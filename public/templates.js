@@ -6,7 +6,7 @@ var userLoginTemplate = '\
 		<button class="login">SIGN IN</button> \
 		<button class="signup">SIGN UP</button>\
 		<button class="guest">TRY RIPPLE</button>';
-		
+
 var userNewTemplate = '\
 		<p>Hello, user!</p> \
 		<p class="message"><%= message %></p> \
@@ -15,6 +15,15 @@ var userNewTemplate = '\
 		<input type="password" id="password" placeholder="password"> \
 		<input type="password" id="password-confirm" placeholder="confirm password"> \
 		<button class="create">GET STARTED</button>';
+
+var userEditTemplate = '\
+		<p>Hello, user!</p> \
+		<p class="message"><%= message %></p> \
+		<input type="text" id="username" placeholder="new username"> \
+		<input type="text" id="email" placeholder="new email"> \
+		<input type="password" id="password" placeholder="new password"> \
+		<input type="password" id="password-confirm" placeholder="confirm password"> \
+		<button class="update">SAVE</button>';
 
 var userGuestTemplate = '\
 		<p>Hello! You can save your info by signing up.</p> \
@@ -26,9 +35,14 @@ var userGuestTemplate = '\
 		<button class="update">GET STARTED</button>';
 
 var userShowTemplate = '\
-		<p>Hello, user!</p> \
+		<% if (name) { %> \
+			<p>Hello, <%= name %>!</p> \
+		<% } else { %> \
+			<p>Hello, user!</p> \
+		<% } %> \
 		<p id="username"><%= username %></p> \
 		<p id="email"><%= email %></p> \
+		<button class="edit">EDIT</button> \
 		<button class="logout">LOG OUT</button>';
 
 
