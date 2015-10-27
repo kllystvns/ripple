@@ -7,6 +7,10 @@
 	src: url('fonts/OpenSans-Regular.ttf');
 }
 
+svg {
+	z-index: 20;
+}
+
 * {
 	margin: 0;
 	padding: 0;
