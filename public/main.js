@@ -32,16 +32,37 @@ var doneLoading = function() {
 }
 window.onload = function(){
 	$(window).scrollTop(originY);
-
 	window.bodyOfWater = [];
+
+	var ua = navigator.userAgent.toLowerCase();
+	var isMobile = ua.search(/(iphone)|(ipod)|(android)/) !== -1;
+
+	if (isMobile) {
 	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
-	bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
-	bodyOfWater.push(new RippleGroup('#ripple', 30, 3500, 30, null, '#98b'));
-	bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
-	bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99d'));
-	bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79c'));
-	bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#6bb'));
-	bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#5da'));
+		bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
+		bodyOfWater.push(new RippleGroup('#ripple', 30, 3500, 30, null, '#98b'));
+		bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
+		bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99d'));
+		bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79c'));
+		bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#6bb'));
+		bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#5da'));
+	}
+	else {	
+	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
+		bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
+		bodyOfWater.push(new RippleGroup('#ripple', 30, 3500, 30, null, '#98b'));
+		bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
+		bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99d'));
+		bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79c'));
+		bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#6bb'));
+		bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#5da'));
+	}
 
 	setTimeout(doneLoading, 10);
 }
+
+
+
+
+
+

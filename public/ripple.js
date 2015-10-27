@@ -294,47 +294,36 @@ RippleGroup.prototype.oscillate = function(){
 }
 
 
+$(window).on('load', function(){
+//~~~ SET UP "CANVAS" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	var svg = document.querySelector('#svg-background');
+	svg.setAttribute('x', '0px');
+	svg.setAttribute('y', '0px');
+	svg.setAttribute('width', window.innerWidth + 'px');
+	svg.setAttribute('height', '4600px');
+	
+
 //~~~ ON SCROLL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-$(window).on('scroll', function(event){
-	bodyOfWater.forEach(function(rippleGroup){
-		rippleGroup.update();
-	});
-})
-
-
-
-
-// function setup() {  // setup() runs once
-// 	createCanvas(window.innerWidth, 4600);
-//   frameRate(30);
-// }
+	$(window).on('scroll', function(event){
+		bodyOfWater.forEach(function(rippleGroup){
+			rippleGroup.update();
+		});
+	})
 
 
 //~~~ ON FRAME ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-window.draw = function(){
-	if (window.bodyOfWater) {
-		bodyOfWater.forEach(function(rippleGroup){
-			rippleGroup.ripples.forEach(function(ripple){
-				ripple.draw();
+	window.draw = function(){
+		if (window.bodyOfWater) {
+			bodyOfWater.forEach(function(rippleGroup){
+				rippleGroup.ripples.forEach(function(ripple){
+					ripple.draw();
+				})
 			})
-		})
+		}
 	}
-}
-drawID = setInterval(draw, 100);
+	window.drawID = setInterval(draw, 100);
 
-// function draw() {  // draw() loops forever, until stopped
-// 	clear();
-// 	if (window.bodyOfWater) {
-// 		bodyOfWater.forEach(function(rippleGroup){
-// 			rippleGroup.ripples.forEach(function(ripple){
-// 				ripple.draw();
-// 				// noLoop();
-// 			})	
-// 		});
-// 	}
-// 	//blendMode()
-// }
-
+});
 
 
