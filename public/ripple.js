@@ -1,6 +1,7 @@
 var originY = 500;
 // scroll to origin in main.js
 var strokeGlobal = 0.9;
+var strokeGlobalMax = 1.7;
 
 var scrollState = function(){
 	var quadrant = (window.scrollY < originY) ? -1 : 1;
@@ -10,14 +11,20 @@ var scrollState = function(){
 
 //~~~ RIPPLE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function Ripple(center, growthFactor, vertices, amplitude, bounds, color){
-	this.color = color || '#00f';
-	this.amplitude = amplitude;
+// attributes: center, growthFactor, vertices, amplitude, bounds, color, blur
+function Ripple(attributes){
+	this.color = attributes.color || '#00f';
+	this.stroke = attributes.stroke - 0.1;
+	this.stroke < strokeGlobal ? (this.stroke = strokeGlobal) : null;
+	this.blur = attributes.blur + 1;
+	this.blur > 29 ? (this.blur = 19) : null;
+	this.amplitude = attributes.amplitude;
 	this.path = document.createElementNS('http://www.w3.org/2000/svg','path');
-	var svg = document.querySelector('#svg-background');
+	var svg = document.querySelector('#svg-group');
 	svg.appendChild(this.path);
 
-	if (bounds) {
+	if (attributes.bounds) {
+		var bounds = attributes.bounds;
 		var tl = bounds[0];
 		var tr = bounds[1];
 		var br = bounds[2];
@@ -35,7 +42,7 @@ function Ripple(center, growthFactor, vertices, amplitude, bounds, color){
 		var h2 = h * 0.4
 		var h3 = h * 0.3;
 
-		var a = amplitude;
+		var a = this.amplitude;
 		var initX = 1.3;
 		var initY = 1.3;
 		var initMag = a * 1;
@@ -87,7 +94,7 @@ function Ripple(center, growthFactor, vertices, amplitude, bounds, color){
 		// }, this);
 	}
 	else {
-		this.vertices = this.expand(center, vertices, growthFactor);
+		this.vertices = this.expand(attributes.center, attributes.vertices, attributes.growthFactor);
 	}
 }
 Ripple.prototype.expand = function(center, prevVertices, growthFactor){
@@ -119,29 +126,6 @@ Ripple.prototype.amp = function(amplitude){
 }
 Ripple.prototype.draw = function(){
 	var verts = this.vertices;
-	// // P5
-	// 	noFill();
-	// 	stroke(this.color);
-	// 	strokeWeight(strokeGlobal);
-	// for (var i = 0; i < vertices.length; i++) {
-	// 	var j = i + 1;
-	// 	if (i === vertices.length - 1) {
-	// 		j = 0;
-	// 	}
-	// 	var px1 = vertices[i].p[0];
-	// 	var py1 = vertices[i].p[1];
-	// 	var px2 = vertices[j].p[0];
-	// 	var py2 = vertices[j].p[1];
-
-	// 	var vec1 = createVector(vertices[i].v[0], vertices[i].v[1]);
-	// 	vec1.setMag(vertices[i].m);
-
-	// 	var vec2 = createVector(vertices[j].v[0], vertices[j].v[1]);
-	// 	vec2.setMag(vertices[j].m);
-	// 	vec2.rotate(PI);
-
-	// 	bezier(px1, py1, vec1.x + px1, vec1.y + py1, vec2.x + px2, vec2.y + py2, px2, py2);
-	// }
 
 	// (vector, point, magnitude, difference)
 	var addVector = function(vx,vy,px,py,m) {
@@ -179,8 +163,10 @@ Ripple.prototype.draw = function(){
 	var data = 'M ' + M_xy + ' C ' + C_cxcy_cxcy_xy + ' ' + S_cxcy_xy;
 
 	this.path.setAttribute('stroke', this.color);
-	this.path.setAttribute('stroke-width', strokeGlobal);
+	this.path.setAttribute('stroke-width', this.stroke);
 	this.path.setAttribute('fill', 'none');
+	// PERFORMANCE LAGGING with filter :(
+	// this.path.setAttribute('filter', 'url(#blur-' + this.blur + ')');
 	this.path.setAttribute('d', data);
 	return this.path;
 }
@@ -269,14 +255,23 @@ RippleGroup.prototype.nudgeRipples = function(){
 }
 //function Ripple(center, growthFactor, vertices, amplitude, bounds, color)
 RippleGroup.prototype.makeRipple = function(){
-	var cen = this.center();
+	var attrs = {};
+	attrs.center = this.center();
+	attrs.color = this.color;
+	attrs.amplitude = this.amplitude;
 	if (this.ripples[0]) {
-		var vertices = this.ripples[this.ripples.length - 1].vertices;
-		var ripple = new Ripple(cen, this.growthFactor(), vertices, this.amplitude, null, this.color);
+		var prevRipple = this.ripples[this.ripples.length - 1];
+		attrs.stroke = prevRipple.stroke;
+		attrs.vertices = prevRipple.vertices;
+		attrs.blur = prevRipple.blur;
+		attrs.growthFactor = this.growthFactor();
+		var ripple = new Ripple(attrs);
 	}
 	else {
-		var bounds = [this.tl(), this.tr(), this.br(), this.bl()];
-		var ripple = new Ripple(cen, null, null, this.amplitude, bounds, this.color);
+		attrs.stroke = strokeGlobalMax;
+		attrs.blur = -1;
+		attrs.bounds = [this.tl(), this.tr(), this.br(), this.bl()];
+		var ripple = new Ripple(attrs);
 	}
 	this.ripples.push(ripple);
 }
@@ -301,6 +296,18 @@ $(window).on('load', function(){
 	svg.setAttribute('y', '0px');
 	svg.setAttribute('width', window.innerWidth + 'px');
 	svg.setAttribute('height', '4600px');
+
+	var filter;
+	var blur;
+	for (var i = 0; i < 30; i++) {
+		filter = document.createElementNS('http://www.w3.org/2000/svg','filter');
+		filter.setAttribute('id', 'blur-' + i);
+		blur = document.createElementNS('http://www.w3.org/2000/svg','feGaussianBlur');
+		filter.appendChild(blur);
+		blur.setAttribute('in', 'SourceGraphic');
+		blur.setAttribute('stdDeviation', i / 10);
+		svg.appendChild(filter);
+	}
 	
 
 //~~~ ON SCROLL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

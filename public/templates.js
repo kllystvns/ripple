@@ -51,13 +51,13 @@ var userShowTemplate = '\
 
 
 var dropletShowTemplate = '\
-		<% if (type === "link") { %> \
+		<% if (data.type === "link") { %> \
 			<div class="link"> \
-			<a class="text" href="<%= url %>"><%= name ? name : url %></a>	\
+			<a class="text" href="<%= data.url %>"><%= data.name ? data.name : data.url %></a>	\
 			</div> \
-		<% } else if (type === "quote") { %>	\
-			<div class="quote"><p class="text"><%= text %></p><p class="author">--<%= author %></p></div>	\
-		<% } else if (type === "soundcloud") { %>	\
+		<% } else if (data.type === "quote") { %>	\
+			<div class="quote"><p class="text"><%= data.text ? data.text : "" %></p><p class="author">--<%= data.author %></p></div>	\
+		<% } else if (data.type === "soundcloud") { %>	\
 			<div class="soundcloud"> \
 			<p class="text">not working yet</p>	\
 			</div> \
@@ -65,8 +65,15 @@ var dropletShowTemplate = '\
 		<button class="delete">×</button>';
 
 var dropletEditTemplate = '\
-		<input class="text" type="text" placeholder="add something"> \
-		<input class="url" type="text" placeholder="where is it from?"> \
+		<% if (data.category === "ponder") { %> \
+			<input class="text" type="text" placeholder="record a thought"> \
+			<input class="author" type="text" placeholder="who is it from?"> \
+			<input type="hidden" name="type" class="type" value="quote"> \
+		<% } else { %>	\
+			<input class="name" type="text" placeholder="what have you found?"> \
+			<input class="url" type="text" placeholder="where is it from?(url)"> \
+			<input type="hidden" name="type" class="type" value="link"> \
+		<% } %>	\
 		<button class="add">+</button>';
 
 

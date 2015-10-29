@@ -10,7 +10,7 @@ var read = new Vessel(null, {category: 'read'});
 
 user.vessels = [ponder, see, hear, learn, read];
 user.vessels.forEach(function(vessel){
-		var theseDroplets = _.where(droplets, {category: vessel.category});
+		var theseDroplets = _.where(window.droplets, {category: vessel.category});
 		for (var i = 0; i < 5; i++) {
 			if (theseDroplets[i]) {
 				vessel.add(new Droplet(theseDroplets[i]));
@@ -51,11 +51,11 @@ window.onload = function(){
 	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
 		bodyOfWater.push(new RippleGroup('#user', null, null, null, null, '#a8b'));
 		bodyOfWater.push(new RippleGroup('#ripple', 30, 3500, 30, null, '#98b'));
-		bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#99b'));
-		bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#99d'));
-		bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79c'));
-		bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#6bb'));
-		bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#5da'));
+		bodyOfWater.push(new RippleGroup('#ponder', null, null, null, null, '#a8c'));
+		bodyOfWater.push(new RippleGroup('#see', null, null, null, null, '#98c'));
+		bodyOfWater.push(new RippleGroup('#hear', null, null, null, null, '#79d'));
+		bodyOfWater.push(new RippleGroup('#learn', null, null, null, null, '#6bc'));
+		bodyOfWater.push(new RippleGroup('#read', null, null, null, null, '#6cb'));
 	}
 
 	setTimeout(doneLoading, 10);

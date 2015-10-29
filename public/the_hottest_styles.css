@@ -60,7 +60,9 @@ canvas {
 }
 .vessel li {
 	display: flex;
+	display: -webkit-flex;
 	flex-direction: row;
+	-webkit-flex-direction: row;
 	margin: 4px;
 	border: solid 2px transparent;
 	background: rgba(255,255,255,0.8);
@@ -77,6 +79,7 @@ a, p, button, input {
 }
 .vessel .link {
 	flex-grow: 2;
+	-webkit-flex-grow: 2;
 }
 .vessel li.title {
 	border-color: transparent; 
@@ -93,6 +96,7 @@ a, p, button, input {
 input {
 	visibility: hidden;
 	flex-grow: 2;
+	-webkit-flex-grow: 2;
 	background-color: #eaf1fb;
 	border: none;
 }
@@ -102,7 +106,8 @@ input {
 button {
 	width: 24px;
 	height: 24px;
-	flex: none;
+	flex: 0 0 auto;
+	-webkit-flex: 0 0 auto;
 	border: none;
 	background-color: transparent;
 	font-size: 20px;
@@ -115,11 +120,14 @@ button:hover {
 	left: 50px;
 	top: 50px;
 	display: flex;
+	display: -webkit-flex;
 	flex-direction: column;
+	-webkit-flex-direction: column;
 }
 #user * {
 	margin: 4px;
 	flex-grow: 1;
+	-webkit-flex-grow: 1;
 }
 #user button {
 	width: auto;

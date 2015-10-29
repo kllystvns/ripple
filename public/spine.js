@@ -208,23 +208,26 @@ var DropletView = Backbone.View.extend({
 		this.listenTo(this.model, 'liquidate', this.render);
 	},
 	render: function() {
-		var data = this.model.attributes;
 		if (this.model.attributes.type === 'uninstantiated') {
-			return this.$el.html( this.templateEdit(data) );
+			return this.renderEdit();
 		}
 		else {
-			return this.$el.html( this.templateShow(data) );
+			var data = this.model.attributes;
+			return this.$el.html( this.templateShow({data: data}) );
 		}
 	},
 	renderEdit: function() {
-		return this.$el.html( this.templateEdit(data) );
+		var data = this.model.attributes;
+		return this.$el.html( this.templateEdit({data: data}) );
 	},
 	create: function(){
-		var data = {
-			name: this.$('.text').val(),
-			url: this.$('.url').val(),
-			type: 'link'
-		};
+		var data = {};
+		this.$('.name').val() ? data.name = this.$('.name').val() : null;
+		this.$('.url').val() ? data.url = this.$('.url').val() : null;
+		this.$('.author').val() ? data.author = this.$('.author').val() : null;
+		this.$('.text').val() ? data.text = this.$('.text').val() : null;
+		data.type = this.$('.type').val();
+
 		this.model.create(data);
 	},
 	destroy: function(){
@@ -262,6 +265,7 @@ var VesselView = Backbone.View.extend({
 	initialize: function(){
 		this.render();
 	},
+	dropletType: 'link',
 	render: function(){
 		this.$el.append(this.template);
 		_.each(this.collection.models, function(e){
@@ -275,6 +279,7 @@ var VesselView = Backbone.View.extend({
 // Specialized Vessel views depending on content
 var PonderView = VesselView.extend({
 	el: '#ponder',
+	dropletType: 'quote',
 	template: '<li class="title"><h2>REFLECT</h2></li>'
 });
 var SeeView = VesselView.extend({
