@@ -1,11 +1,13 @@
-var originY = 500;
+var originY = 1000;
+var centerY = window.innerHeight / 2
 // scroll to origin in main.js
 var strokeGlobal = 0.9;
 var strokeGlobalMax = 1.7;
 
-var scrollState = function(){
-	var quadrant = (window.scrollY < originY) ? -1 : 1;
-	return (window.scrollY - originY) * quadrant;
+var getScrollState = function(){
+	var scrollState = window.scrollY + centerY;
+	var quadrant = (scrollState < originY) ? -1 : 1;
+	return (scrollState - originY) * quadrant;
 }
 
 
@@ -14,6 +16,7 @@ var scrollState = function(){
 // attributes: center, growthFactor, vertices, amplitude, bounds, color
 function Ripple(attributes){
 	this.phase = 0;
+	this.opacity = 1;
 	this.growthFactor = attributes.growthFactor;
 	this.color = attributes.color || '#00f';
 	this.stroke = attributes.stroke - 0.1;
@@ -23,13 +26,16 @@ function Ripple(attributes){
 	var svg = document.querySelector('#svg-group');
 	svg.appendChild(this.path);
 
+	// if this is the first ripple, then create shape
 	if (attributes.bounds) {
+		this.index = 0;
+		this.opacity = 0;
+
 		var bounds = attributes.bounds;
 		var tl = bounds[0];
 		var tr = bounds[1];
 		var br = bounds[2];
 		var bl = bounds[3];
-
 		// Randomize size of curves within ripple
 		var w = tr[0] - tl[0];
 		var h = bl[1] - tl[1];
@@ -94,6 +100,7 @@ function Ripple(attributes){
 		// }, this);
 	}
 	else {
+		this.index = -1;
 		this.vertices = this.expand(attributes.center, attributes.vertices, attributes.growthFactor);
 	}
 }
@@ -121,8 +128,16 @@ Ripple.prototype.expand = function(center, prevVertices, growthFactor){
 		}
 		return vertices;
 }
+Ripple.prototype.oscillate = function(center){
+	var oscillateFactor = this.growthFactor * (Math.sin(this.phase) * 0.5 + 0.8);
+	this.phase += 0.157;
+	this.oscVertices = this.expand(center, this.vertices, oscillateFactor);
+}
 Ripple.prototype.amp = function(amplitude){
 	return Math.random() * amplitude / 2 + amplitude;
+}
+Ripple.prototype.evaporate = function(){
+	this.path.remove();
 }
 Ripple.prototype.draw = function(){
 	var verts = this.oscVertices;
@@ -165,18 +180,9 @@ Ripple.prototype.draw = function(){
 	this.path.setAttribute('stroke', this.color);
 	this.path.setAttribute('stroke-width', this.stroke);
 	this.path.setAttribute('fill', 'none');
-	// PERFORMANCE LAGGING with filter :(
-	// this.path.setAttribute('filter', 'url(#blur-' + this.blur + ')');
+	// this.path.style.opacity = this.opacity;
 	this.path.setAttribute('d', data);
 	return this.path;
-}
-Ripple.prototype.evaporate = function(){
-	this.path.remove();
-}
-Ripple.prototype.oscillate = function(center){
-	var oscillateFactor = this.growthFactor * Math.sin(this.phase);
-	this.phase += 0.15;
-	this.oscVertices = this.expand(center, this.vertices, oscillateFactor);
 }
 
 
@@ -189,19 +195,19 @@ Ripple.prototype.oscillate = function(center){
 
 // ~~~ RIPPLE GROUP ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color){
-	this.el = document.querySelector(domElement);
-	this.color = color;
-	this.scrollStart = this.el.offsetTop - originY - 720;
-	this.scrollEnd = scrollEnd || this.scrollStart + this.el.offsetHeight + (720 * 2);
+function RippleGroup(attributes){
+	this.el = document.querySelector(attributes.domElement);
+	this.color = attributes.color;
+	this.scrollStart = attributes.scrollStart || this.el.offsetTop - originY - 720;
+	this.scrollEnd = attributes.scrollEnd || this.scrollStart + this.el.offsetHeight + (720 * 2);
 	
-	this.scrollFactor = scrollFactor || 50;
-	this.highWaterMark = scrollState(); //default initial
-	this.prevGrowthFactor = growthFactor || 14;
+	this.scrollFactor = attributes.scrollFactor || 50;
+	this.highWaterMark = getScrollState(); //default initial
+	this.prevGrowthFactor = attributes.growthFactor || 14;
 	this.growthFactor = function(){
 		return this.prevGrowthFactor * (1 + (this.ripples.length / 22))
 	}
-	this.amplitude = amplitude || 20;
+	this.amplitude = attributes.amplitude || 20;
 
 	// get div rectangle boundaries
 	this.tl = function(){
@@ -225,25 +231,25 @@ function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitud
 }
 
 RippleGroup.prototype.isActive = function(){
-	return scrollState() > this.scrollStart && scrollState() < this.scrollEnd;
+	return getScrollState() > this.scrollStart && getScrollState() < this.scrollEnd;
 }
 
 
 //needs to happen on scroll
 RippleGroup.prototype.update = function(){
 	if (this.isActive()) {
-		// NOT READY YET
 		if (this.center() !== this.prevCenter) {
+		// NOT READY YET
 			this.nudgeRipples();
 			this.prevCenter = this.center();
 		}
 
-		if (scrollState() > this.highWaterMark + this.scrollFactor) {
-			this.highWaterMark = Math.floor(scrollState() / this.scrollFactor) * this.scrollFactor;
+		if (getScrollState() > this.highWaterMark + this.scrollFactor) {
+			this.highWaterMark = Math.floor(getScrollState() / this.scrollFactor) * this.scrollFactor;
 			this.makeRipple();
 		}
-		if (scrollState() < this.highWaterMark) {
-			this.highWaterMark = Math.floor(scrollState() / this.scrollFactor) * this.scrollFactor;
+		if (getScrollState() < this.highWaterMark) {
+			this.highWaterMark = Math.floor(getScrollState() / this.scrollFactor) * this.scrollFactor;
 			this.removeRipple();
 		}
 	}
@@ -265,30 +271,175 @@ RippleGroup.prototype.makeRipple = function(){
 		var prevRipple = this.ripples[this.ripples.length - 1];
 		attrs.stroke = prevRipple.stroke;
 		attrs.vertices = prevRipple.vertices;
-		attrs.blur = prevRipple.blur;
 		attrs.growthFactor = this.growthFactor();
 		var ripple = new Ripple(attrs);
+		if (this.ripples[1]) {
+			_.last(this.ripples).index = 1;
+		}
 	}
 	else {
 		attrs.stroke = strokeGlobalMax;
-		attrs.blur = -1;
 		attrs.bounds = [this.tl(), this.tr(), this.br(), this.bl()];
+		attrs.growthFactor = this.growthFactor();
 		var ripple = new Ripple(attrs);
 	}
 	this.ripples.push(ripple);
 }
 RippleGroup.prototype.removeRipple = function(){
-	this.ripples[this.ripples.length -1].evaporate();
-	this.ripples.pop();
-}
-//needs to happen on frame
-RippleGroup.prototype.oscillate = function(){
-	if (this.isActive) {
-		for (var i = 0; i < this.ripples.length; i++) {
-			this.ripples[i].oscillate();
+	if (this.ripples[0]) {
+		_.last(this.ripples).evaporate();
+		this.ripples.pop();
+		if (this.ripples[0]) {
+			_.last(this.ripples).index = -1;
 		}
 	}
 }
+
+//~~~ DOM ELEMENT RIPPLE ANIMATION ~~~~~~~~~~~~~~~~~~~
+// applied to DOM element instead of SVG path
+
+function DOMRipple(attributes) {
+	this.growthFactor = attributes.growthFactor;
+	this.index = attributes.index;
+	this.phase = 0;
+	this.translate = 0;
+	this.frequency = attributes.frequency || 0.157;
+
+	// REPLICATE 'DUMMY' DOM ELEMENT TO PERFORM TRANSFORMATIONS
+	this.el = document.createElement('div');
+	this.dummyEl = attributes.domElement;
+	this.dummyEl.parentElement.appendChild(this.el);
+	this.el.outerHTML = this.dummyEl.outerHTML;
+	// outerHTML replaces original dom node with new dom node
+	var newEl = _.last(this.dummyEl.parentElement.children);
+	this.el = newEl;
+	// 'Parent' element for animation may not be the immediate parent
+	this.parentEl = attributes.parentEl;
+
+	this.el.style.width = '100%'
+	this.el.style.position = 'absolute';
+	this.el.style.top = this.dummyEl.offsetTop + 'px';
+	this.el.style.left = this.dummyEl.offsetLeft + 'px';
+	this.el.style.opacity = 0.9 - (this.index / 5);
+	for (prop in attributes.styles) {
+		console.log(64)
+		this.el.style[prop] = attributes.styles[prop];
+	}
+
+}
+DOMRipple.prototype.center = function(domElement) {
+	var rect = domElement.getBoundingClientRect();
+	var center = new Point([
+		// x
+		rect.left + (rect.width / 2),
+		// y
+		rect.top + (rect.height / 2)
+	]);
+	return center;
+}
+DOMRipple.prototype.oscillate = function(center) {
+	var oscillateFactor = this.growthFactor * Math.sin(this.phase) * (this.index + 1);
+	this.phase += this.frequency;
+	if (this.phase > 3.14) {
+		this.phase = 0;
+	}
+	this.translate = this.expand(oscillateFactor);	
+}
+DOMRipple.prototype.expand = function(growthFactor) {
+	var origin = this.center(this.dummyEl);
+	var parentCenter = this.center(this.parentEl);
+	var translateVector = new Vector({initial: parentCenter, terminal: origin});
+	// console.log(translateVector)
+	translateVector.setMagnitude(growthFactor);
+
+	return translateVector;
+}
+DOMRipple.prototype.draw = function() {
+	var x = this.translate.coordinates.x;
+	var y = this.translate.coordinates.y;
+	var transformString = 'translate(' + x + 'px,' + y + 'px)';
+
+	this.el.style.transform = transformString;
+}
+
+
+function DOMRippleGroup(attributes) {
+	this.parentEl = document.querySelector(attributes.domParentElement);
+	this.el = document.querySelector(attributes.domElement);
+	this.growthFactor = attributes.growthFactor;
+
+	this.ripples = [];
+	for (var i = 0; i < attributes.numberOfRipples; i++) {
+		var attrs = {
+			growthFactor: this.growthFactor,
+			domElement: this.el,
+			parentEl: this.parentEl,
+			styles: attributes.styles,
+			frequency: attributes.frequency,
+			index: i
+		}
+		var domRipple = new DOMRipple(attrs);
+		this.ripples.push(domRipple);
+	}
+}
+DOMRippleGroup.prototype.center = function() {
+	var center = new Point([
+		// x
+		this.parentEl.offsetLeft + (this.parentEl.offsetWidth / 2),
+		// y
+		this.parentEl.offsetTop + (this.parentEl.offsetHeight / 2)
+	]);
+	return center;
+}
+DOMRippleGroup.prototype.update = function() {
+	this.ripples.forEach(function(domRipple) {
+		//domRipple.oscillate();
+		//domRipple.draw();
+	});
+}
+DOMRippleGroup.prototype.render = function() {
+	this.ripples.forEach(function(domRipple) {
+		//domRipple.oscillate();
+		//domRipple.draw();
+	});
+}
+
+
+
+function Point(dataArray) {
+	this.x = dataArray[0];
+	this.y = dataArray[1]
+}
+function BezierPoint(data) {
+	this.p = data.point;
+	this.v = data.vector;
+}
+
+function Vector(data) {
+	this.coordinates = {};
+	// data: initial point, terminal point
+	for (axis in data.initial) {
+		this.coordinates[axis] = data.terminal[axis] - data.initial[axis];
+	}
+}
+Vector.prototype.getMagnitude = function() {
+	var c = this.coordinates;
+	return Math.sqrt( Math.pow(c.x, 2) + Math.pow(c.y, 2) );
+}
+Vector.prototype.setMagnitude = function(targetMagnitude) {
+	var currMag = this.getMagnitude();
+	var scalar = targetMagnitude / currMag;
+	for (axis in this.coordinates) {
+		this.coordinates[axis] *= scalar;
+	}
+}
+Vector.prototype.addToPoint = function(point) {
+	return new Point([
+		point.x + this.coordinates.x,
+		point.y + this.coordinates.y
+	]);
+}
+
 
 
 $(window).on('load', function(){
@@ -299,19 +450,6 @@ $(window).on('load', function(){
 	svg.setAttribute('width', window.innerWidth + 'px');
 	svg.setAttribute('height', '4600px');
 
-	var filter;
-	var blur;
-	for (var i = 0; i < 30; i++) {
-		filter = document.createElementNS('http://www.w3.org/2000/svg','filter');
-		filter.setAttribute('id', 'blur-' + i);
-		blur = document.createElementNS('http://www.w3.org/2000/svg','feGaussianBlur');
-		filter.appendChild(blur);
-		blur.setAttribute('in', 'SourceGraphic');
-		blur.setAttribute('stdDeviation', i / 10);
-		svg.appendChild(filter);
-	}
-	
-
 //~~~ ON SCROLL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	$(window).on('scroll', function(event){
@@ -319,7 +457,6 @@ $(window).on('load', function(){
 			rippleGroup.update();
 		});
 	})
-
 
 //~~~ ON FRAME ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	window.draw = function(){
@@ -332,6 +469,7 @@ $(window).on('load', function(){
 				})
 			})
 		}
+
 	}
 	window.drawID = setInterval(draw, 100);
 

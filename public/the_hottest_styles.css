@@ -14,9 +14,9 @@
 	list-style: none;
 	text-decoration: none;
 	line-height: 1;
-	color: #656;
 	font-size: 18px;
 	font-family: 'OpenSans';
+	color: #656;
 }
 *:focus {
 	outline: none;
@@ -39,6 +39,7 @@ body {
 	width: 100%;
 	height: 100%;
 	background: white;
+	z-index: 100;
 }
 
 canvas {
@@ -54,7 +55,7 @@ canvas {
 	position: absolute;
 	/*margin: 50px;*/
 	max-width: 520px;
-	min-width: 380px;
+	min-width: 320px;
 	min-height: 160px;
 
 }
@@ -65,7 +66,7 @@ canvas {
 	-webkit-flex-direction: row;
 	margin: 4px;
 	border: solid 2px transparent;
-	background: rgba(255,255,255,0.8);
+	background: rgba(255,255,255,0.9);
 }
 a, p, button, input {
 	margin: 4px;
@@ -77,7 +78,7 @@ a, p, button, input {
 .vessel a:hover {
 	color: #289;
 }
-.vessel .link {
+.vessel .link, .vessel .quote {
 	flex-grow: 2;
 	-webkit-flex-grow: 2;
 }
@@ -118,7 +119,7 @@ button:hover {
 
 #user {
 	left: 50px;
-	top: 50px;
+	top: 220px;
 	display: flex;
 	display: -webkit-flex;
 	flex-direction: column;
@@ -128,31 +129,72 @@ button:hover {
 	margin: 4px;
 	flex-grow: 1;
 	-webkit-flex-grow: 1;
+	color: #878;
 }
 #user button {
 	width: auto;
 	padding: 4px;
 	padding-right: 6px;
 	padding-bottom: 6px;
+	text-align: left;
+	cursor: pointer;
 }
 #user button:hover {
 	color: #289;
+	background-color: #f4faff;
 }
 #user input {
 	visibility: visible;
-
+	background-color: #f4faff;
+}
+#user .guest {
+	color: #77bdda;
+}
+#user .guest:hover {
+	color: #0ad;
 }
 
 #ripple {
 	position: absolute;
-	top: 550px;
+	top: 850px;
 	line-height: 0.8;
 	padding-top: 10px;
-	font-family: 'Syncopate';
 	font-size: 130px;
-	color: #908c9e;
 	right: 22vw;
+	text-align: center;
 }
+#ripple p {
+	text-align: right;
+	color: #656;
+	font-size: 23px;
+	/*text-align: left;*/
+}
+#ripple .sub {
+	font-size: 18px;
+}
+#ripple .arrow-hint p {
+	color: #908c9e;
+	font-family: 'Syncopate';
+	font-size: 60px; 
+	display: inline-block;
+	transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
+}
+#ripple .arrow-hint-0 p {
+	transform: rotate(270deg);
+	-webkit-transform: rotate(270deg);
+}
+#ripple .spacer {
+	height: 100px;
+}
+#ripple .ghost {
+	position: absolute;
+	top: 30px;
+	left: 0px;
+	visibility: hidden;
+	z-index: -10;
+}
+
 #ponder {
 	left: 50px;
 	top: 1450px;

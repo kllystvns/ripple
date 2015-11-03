@@ -12,7 +12,20 @@
 </head>
 <body>
 
+<!-- SVG 'container' for ripples -->
+	<svg id="svg-background" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<g id="svg-group"></g>
+	</svg>
+
+<!-- MAIN CONTENT -->
 	<div id="user" class="new-user vessel"></div>
+	<div id="ripple">
+		<img class="logo" src="logo.svg" width="620px">
+		<img class="ghost" src="logo_ghost.svg" width="620px">
+		<div class="spacer"></div>
+		<p>A space where you can collect your thoughts</p>
+		<p class="sub">from different sources around the web</p>
+	</div>
 
 <!-- TEMPLATES for Backbone --> 
 	<script src="templates.js"></script>
@@ -23,8 +36,9 @@
 	<script>
 		window.user = new User();
 		user.isAuthenticated = false
-		userView = new UserView({model: user});
 	</script>
+
+	<script src="jumpIn.js"></script>
 
 </body>
 </html>
