@@ -32,7 +32,6 @@ var doneLoading = function() {
 	$('#loading').hide();
 
 	$(window).on('scroll', function(e) {
-		console.log(e)
 		_.each($('.arrow-hint'), function(e) {
 			e.remove();
 		})

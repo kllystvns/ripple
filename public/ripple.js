@@ -10,7 +10,56 @@ var getScrollState = function(){
 	return (scrollState - originY) * quadrant;
 }
 
+//~~~ MATH functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+var square = function(x) { return x * x }
 
+function Point(dataArray) {
+	this.x = dataArray[0];
+	this.y = dataArray[1]
+}
+function BezierPoint(data) {
+	this.p = data.point;
+	this.v = data.vector;
+}
+
+function Vector(data) {
+	this.coordinates = {};
+	// data: initial point, terminal point
+	for (axis in data.terminal) {
+		if (data.initial) {
+			this.coordinates[axis] = data.terminal[axis] - data.initial[axis];
+		}
+		else {
+			this.coordinates[axis] = data.terminal[axis];
+		}
+	}
+}
+Vector.prototype.getMagnitude = function() {
+	var c = this.coordinates;
+	return Math.sqrt( Math.pow(c.x, 2) + Math.pow(c.y, 2) );
+}
+Vector.prototype.setMagnitude = function(targetMagnitude) {
+	var currMag = this.getMagnitude();
+	var scalar = targetMagnitude / currMag;
+	for (axis in this.coordinates) {
+		this.coordinates[axis] *= scalar;
+	}
+}
+Vector.prototype.addToPoint = function(point) {
+	return new Point([
+		point.x + this.coordinates.x,
+		point.y + this.coordinates.y
+	]);
+}
+Vector.prototype.invert = function() {
+	for (axis in this.coordinates) {
+		this.coordinates[axis] *= -1;
+	}
+	return this;
+}
+
+
+//~~~ RIPPLE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~ RIPPLE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // attributes: center, growthFactor, vertices, amplitude, bounds, color
@@ -31,14 +80,13 @@ function Ripple(attributes){
 		this.index = 0;
 		this.opacity = 0;
 
-		var bounds = attributes.bounds;
-		var tl = bounds[0];
-		var tr = bounds[1];
-		var br = bounds[2];
-		var bl = bounds[3];
+		var tl = attributes.bounds.tl;
+		var tr = attributes.bounds.tr;
+		var br = attributes.bounds.br;
+		var bl = attributes.bounds.bl;
 		// Randomize size of curves within ripple
-		var w = tr[0] - tl[0];
-		var h = bl[1] - tl[1];
+		var w = attributes.bounds.width;
+		var h = attributes.bounds.height;
 		var w1 = w * (0.2 + ((0.5 - Math.random()) * 0.07));
 		var w2 = w * (0.2 + ((0.5 - Math.random()) * 0.07));
 		var w3 = w * (0.2 + ((0.5 - Math.random()) * 0.07));
@@ -51,43 +99,80 @@ function Ripple(attributes){
 		var a = this.amplitude;
 		var initX = 1.3;
 		var initY = 1.3;
-		var initMag = a * 1;
 
+		// Ripple shape is made of 16 specific vertices
 		// Point, Vector, Magnitude
 		this.vertices = [
-		//0
-			{ p: [tl[0] - a, tl[1] - a], v: [1, -1 * initY], m: initMag},
-		//1
-			{ p: [tl[0] + w1, tl[1] - a], v: [initX, 1], m: initMag},
-		//2
-			{ p: [tl[0] + w1 + w2, tl[1] - a], v: [initX, -1], m: initMag},
-		//3
-			{ p: [tl[0] + w1 + w2 + w3, tl[1] - a], v: [initX, 1], m: initMag},
-		//4
-			{ p: [tl[0] + w1 + w2 + w3 + w4, tl[1] - a], v: [initX, -1], m: initMag},
-		//5
-			{ p: [tl[0] + w + a, tl[1] - a], v: [1, initY], m: initMag },
-		//6
-			{ p: [tr[0] + a, tr[1] + h1], v: [-1, initY], m: initMag / 1.5},
-		//7
-			{ p: [tr[0] + a, tr[1] + h1 + h2], v: [1, initY], m: initMag / 1.5},
-		//8
-			{ p: [tr[0] + a, tr[1] + h + a], v: [-1, initY], m: initMag },
-		//9
-			{ p: [br[0] - w4, br[1] + a], v: [-1 * initX, -1], m: initMag},
-		//10
-			{ p: [br[0] - w4 - w1, br[1] + a], v: [-1 * initX, 1], m: initMag},
-		//11
-			{ p: [br[0] - w4 - w1 - w3, br[1] + a], v: [-1 * initX, -1], m: initMag},
-		//12
-			{ p: [br[0] - w4 - w1 - w3 - w2, br[1] + a], v: [-1 * initX, 1], m: initMag},
-		//13
-			{ p: [br[0] - w - a, br[1] + a], v: [-1, -1 * initY], m: initMag },
-		//14
-			{ p: [bl[0] - a, bl[1] - h1], v: [1, -1 * initY], m: initMag / 1.5},
-		//15
-			{ p: [bl[0] - a, bl[1] - h1 - h2], v: [-1, -1 * initY], m: initMag / 1.5}
+			{ // 0 
+				p: new Point([tl.x - a, tl.y - a]),
+				v: new Vector({terminal: {x: 1, y: -1 * initY} }) 
+			},
+			{ // 1
+				p: new Point([tl.x + w1, tl.y - a]), 
+				v: new Vector({terminal: {x: initX, y: 1} })
+			},
+			{ // 2
+				p: new Point([tl.x + w1 + w2, tl.y - a]), 
+				v: new Vector({terminal: {x: initX, y: -1} })
+			},
+			{ // 3
+				p: new Point([tl.x + w1 + w2 + w3, tl.y - a]), 
+				v: new Vector({terminal: {x: initX, y: 1} })
+			},
+			{ // 4
+				p: new Point([tl.x + w1 + w2 + w3 + w4, tl.y - a]), 
+				v: new Vector({terminal: {x: initX, y: -1} })
+			},
+			{ // 5
+				p: new Point([tl.x + w + a, tl.y - a]), 
+				v: new Vector({terminal: {x: 1, y: initY} })
+			},
+			{ // 6
+				p: new Point([tr.x + a, tr.y + h1]), 
+				v: new Vector({terminal: {x: -1, y: initY} })
+			},
+			{ // 7
+				p: new Point([tr.x + a, tr.y + h1 + h2]), 
+				v: new Vector({terminal: {x: 1, y: initY} })
+			},
+			{ // 8
+				p: new Point([tr.x + a, tr.y + h + a]), 
+				v: new Vector({terminal: {x: -1, y: initY} })
+			},
+			{ // 9
+				p: new Point([br.x - w4, br.y + a]), 
+				v: new Vector({terminal: {x: -1 * initX, y: -1} })
+			},
+			{ // 10
+				p: new Point([br.x - w4 - w1, br.y + a]), 
+				v: new Vector({terminal: {x: -1 * initX, y: 1} })
+			},
+			{ // 11 
+				p: new Point([br.x - w4 - w1 - w3, br.y + a]), 
+				v: new Vector({terminal: {x: -1 * initX, y: -1} })
+			},
+			{ // 12
+				p: new Point([br.x - w4 - w1 - w3 - w2, br.y + a]), 
+				v: new Vector({terminal: {x: -1 * initX, y: 1} })
+			},
+			{ // 13
+				p: new Point([br.x - w - a, br.y + a]), 
+				v: new Vector({terminal: {x: -1, y: -1 * initY} })
+			},
+			{ // 14
+				p: new Point([bl.x - a, bl.y - h1]), 
+				v: new Vector({terminal: {x: 1, y: -1 * initY} })
+			},
+			{ // 15
+				p: new Point([bl.x - a, bl.y - h1 - h2]), 
+				v: new Vector({terminal: {x: -1, y: -1 * initY} })
+			}
 		];
+		_.each(this.vertices, function(vertex) {
+			vertex.m = this.amplitude
+			vertex.v.setMagnitude(vertex.m);
+			vertex.traj = null;
+		}, this);
 
 		// // initial ROTATE vextor & AMP magnitude
 		// _.each(this.vertices, function(vertex){
@@ -101,77 +186,79 @@ function Ripple(attributes){
 	}
 	else {
 		this.index = -1;
-		this.vertices = this.expand(attributes.center, attributes.vertices, attributes.growthFactor);
+		this.vertices = attributes.vertices;
+		_.each(this.vertices, function(vertex) {
+			vertex.m = this.amplitude
+			vertex.v.setMagnitude(vertex.m);
+			vertex.traj = null;
+		}, this);
+		this.expand(attributes.center, attributes.growthFactor);
 	}
 }
-Ripple.prototype.expand = function(center, prevVertices, growthFactor){
-		// creates duplicate object literal
-		var vertices = prevVertices.map(function(vert){
-			var copy = {p: [], v: [], m: null};
-			copy.p[0] = vert.p[0];
-			copy.p[1] = vert.p[1];
-			copy.v[0] = vert.v[0];
-			copy.v[1] = vert.v[1];
-			copy.m = vert.m;
-			return copy;
-		});
-		var c = center;
-		for (var i = 0; i < vertices.length; i++){
-			var dVector = [vertices[i].p[0] - c[0], (vertices[i].p[1] - c[1])];
-			var angle = Math.atan2(dVector[1], dVector[0]);
-			gVector = [Math.cos(angle), Math.sin(angle)];
-			gVector[0] *= growthFactor;
-			gVector[1] *= (growthFactor);
-
-			vertices[i].p[0] += gVector[0];
-			vertices[i].p[1] += gVector[1];
+Ripple.prototype.replicateVertices = function() {
+	// creates duplicate object literal
+	var copyVertices = this.vertices.map(function(vert) {
+		var copy = {
+			p: new Point([vert.p.x, vert.p.y]),
+			v: new Vector({terminal: vert.v.coordinates}),
+			m: vert.m,
+			traj: vert.traj
 		}
-		return vertices;
+		return copy
+	});
+	return copyVertices;
+}
+Ripple.prototype.expand = function(center, growthFactor){
+	var vertices = this.replicateVertices();
+	for (var i = 0; i < vertices.length; i++){
+		var growthVector = new Vector({initial: center, terminal: vertices[i].p});
+		growthVector.setMagnitude(growthFactor);
+		vertices[i].p = growthVector.addToPoint(vertices[i].p); 
+	}
+	return vertices;
 }
 Ripple.prototype.oscillate = function(center){
 	var oscillateFactor = this.growthFactor * (Math.sin(this.phase) * 0.5 + 0.8);
 	this.phase += 0.157;
-	this.oscVertices = this.expand(center, this.vertices, oscillateFactor);
+	this.oscVertices = this.expand(center, oscillateFactor);
 }
-Ripple.prototype.amp = function(amplitude){
+Ripple.prototype.nudge = function(vector) {
+	for (var i = 0; i < this.vertices.length; i++) {
+		this.vertices[i].p = vector.addToPoint(this.vertices[i].p);
+	}
+}
+Ripple.prototype.amplify = function(amplitude){
 	return Math.random() * amplitude / 2 + amplitude;
 }
 Ripple.prototype.evaporate = function(){
 	this.path.remove();
 }
 Ripple.prototype.draw = function(){
+	// Generate SVG Bezier curve syntax
 	var verts = this.oscVertices;
 
-	// (vector, point, magnitude, difference)
-	var addVector = function(vx,vy,px,py,m) {
-		var dx = vx * m;
-		var x = px + dx;
-		var dy = vy * m;
-		var y = py + dy;
-		// returns string
-		return x + ' ' + y;
+	var xyString = function(obj) {
+		return ' ' + obj.x + ' ' + obj.y + ' ';
 	}
 
-	// Generate SVG Bezier curve syntax
-
 	// Moveto initial point
-	var M_xy = verts[0].p.join(' ');
+	var M_xy = xyString(verts[0].p);
 
 	// Curveto from 1st point to 2nd point
 	var C_cxcy_cxcy_xy;
-	var _cxcy1 = addVector(verts[0].v[0], verts[0].v[1], verts[0].p[0], verts[0].p[1], verts[0].m);
-	var _cxcy2 = addVector(-1 * verts[1].v[0], -1 * verts[1].v[1], verts[1].p[0], verts[1].p[1], verts[1].m); 
-	var _xy = verts[1].p.join(' ');
-	var C_cxcy_cxcy_xy = _cxcy1 + ' ' + _cxcy2 + ' ' + _xy; 
+	var _cxcy1 = xyString(verts[0].v.addToPoint(verts[0].p) );
+	var _cxcy2 = xyString(verts[1].v.invert().addToPoint(verts[1].p) );
+	var _xy = xyString(verts[1].p);
+	C_cxcy_cxcy_xy = _cxcy1 + _cxcy2 + _xy; 
 
 	// Curveto (shorthand) to subsequent points
 	var S_cxcy_xy_array = [];
 	for (var i = 2; i < verts.length + 1; i++) {
 		var j = (i === verts.length ? 0 : i);
-		var _xy = verts[j].p.join(' ');
-		var _cxcy = addVector(-1 * verts[j].v[0], -1 * verts[j].v[1], verts[j].p[0], verts[j].p[1], verts[j].m);
-		
-		S_cxcy_xy_array.push('S ' + _cxcy + ' ' + _xy);
+		var _xy = xyString(verts[j].p);
+		var _cxcy = xyString(verts[j].v.invert().addToPoint(verts[j].p) );
+
+		S_cxcy_xy_array.push('S' + _cxcy + _xy);
 	}
 	var S_cxcy_xy = S_cxcy_xy_array.join(' ');
 
@@ -198,50 +285,48 @@ Ripple.prototype.draw = function(){
 function RippleGroup(attributes){
 	this.el = document.querySelector(attributes.domElement);
 	this.color = attributes.color;
+
 	this.scrollStart = attributes.scrollStart || this.el.offsetTop - originY - 720;
 	this.scrollEnd = attributes.scrollEnd || this.scrollStart + this.el.offsetHeight + (720 * 2);
-	
 	this.scrollFactor = attributes.scrollFactor || 50;
 	this.highWaterMark = getScrollState(); //default initial
-	this.prevGrowthFactor = attributes.growthFactor || 14;
-	this.growthFactor = function(){
-		return this.prevGrowthFactor * (1 + (this.ripples.length / 22))
-	}
+	
 	this.amplitude = attributes.amplitude || 20;
-
-	// get div rectangle boundaries
-	this.tl = function(){
-		return [this.el.offsetLeft, this.el.offsetTop];
-	};
-	this.tr = function(){
-		return [this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop];
-	};
-	this.br = function(){
-		return [this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop + this.el.offsetHeight];
-	};
-	this.bl = function(){
-		return [this.el.offsetLeft, this.el.offsetTop + this.el.offsetHeight];
-	};
-	this.center = function(){
-		return [this.el.offsetLeft + (this.el.offsetWidth / 2), this.el.offsetTop + (this.el.offsetHeight / 2)];
-	};
-	this.prevCenter = null;
+	this.initGrowthFactor = attributes.growthFactor || 14;
+	this.prevCenter = this.getCenter();
 
 	this.ripples = [];
 }
-
-RippleGroup.prototype.isActive = function(){
+RippleGroup.prototype.growthFactor = function() {
+	return this.initGrowthFactor * (1 + (this.ripples.length / 22));
+}
+RippleGroup.prototype.getRectangle = function() {
+	// get [x,y] coordinates of DOM element rectangle
+	var bounds = {
+		// top-left, top-right, bottom-right, bottom-left
+		tl: new Point([this.el.offsetLeft, this.el.offsetTop]),
+		tr: new Point([this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop]),
+		br: new Point([this.el.offsetLeft + this.el.offsetWidth, this.el.offsetTop + this.el.offsetHeight]),
+		bl: new Point([this.el.offsetLeft, this.el.offsetTop + this.el.offsetHeight]),
+		width: this.el.offsetWidth,
+		height: this.el.offsetHeight
+	}
+	return bounds;
+}
+RippleGroup.prototype.getCenter = function() {
+	return new Point([this.el.offsetLeft + (this.el.offsetWidth / 2), this.el.offsetTop + (this.el.offsetHeight / 2)]);
+}
+RippleGroup.prototype.isActive = function() {
 	return getScrollState() > this.scrollStart && getScrollState() < this.scrollEnd;
 }
-
 
 //needs to happen on scroll
 RippleGroup.prototype.update = function(){
 	if (this.isActive()) {
-		if (this.center() !== this.prevCenter) {
+		if (this.getCenter() !== this.prevCenter) {
 		// NOT READY YET
 			this.nudgeRipples();
-			this.prevCenter = this.center();
+			this.prevCenter = this.getCenter();
 		}
 
 		if (getScrollState() > this.highWaterMark + this.scrollFactor) {
@@ -256,22 +341,25 @@ RippleGroup.prototype.update = function(){
 }
 // NOT READY YET
 RippleGroup.prototype.nudgeRipples = function(){
-	var cen = this.center();
+	var newCen = this.getCenter();
+	var translateVector = new Vector({initial: this.prevCenter, terminal: newCen});
+	this.prevCenter = newCen;
 	for (var i = 0; i < this.ripples.length; i++) {
-		// this.ripples[i].newCenter(cen);
+		this.ripples[i].nudge(translateVector);
 	}
 }
 //function Ripple(center, growthFactor, vertices, amplitude, bounds, color)
 RippleGroup.prototype.makeRipple = function(){
 	var attrs = {};
-	attrs.center = this.center();
+	var center = this.getCenter();
 	attrs.color = this.color;
-	attrs.amplitude = this.amplitude;
+	var currentGrowth = this.growthFactor() / this.initGrowthFactor;
+	attrs.amplitude = this.amplitude * (1 + (this.ripples.length / 5));
 	if (this.ripples[0]) {
 		var prevRipple = this.ripples[this.ripples.length - 1];
 		attrs.stroke = prevRipple.stroke;
-		attrs.vertices = prevRipple.vertices;
 		attrs.growthFactor = this.growthFactor();
+		attrs.vertices = prevRipple.expand(center, attrs.growthFactor);
 		var ripple = new Ripple(attrs);
 		if (this.ripples[1]) {
 			_.last(this.ripples).index = 1;
@@ -279,8 +367,8 @@ RippleGroup.prototype.makeRipple = function(){
 	}
 	else {
 		attrs.stroke = strokeGlobalMax;
-		attrs.bounds = [this.tl(), this.tr(), this.br(), this.bl()];
 		attrs.growthFactor = this.growthFactor();
+		attrs.bounds = this.getRectangle();
 		var ripple = new Ripple(attrs);
 	}
 	this.ripples.push(ripple);
@@ -322,7 +410,6 @@ function DOMRipple(attributes) {
 	this.el.style.left = this.dummyEl.offsetLeft + 'px';
 	this.el.style.opacity = 0.9 - (this.index / 5);
 	for (prop in attributes.styles) {
-		console.log(64)
 		this.el.style[prop] = attributes.styles[prop];
 	}
 
@@ -349,7 +436,6 @@ DOMRipple.prototype.expand = function(growthFactor) {
 	var origin = this.center(this.dummyEl);
 	var parentCenter = this.center(this.parentEl);
 	var translateVector = new Vector({initial: parentCenter, terminal: origin});
-	// console.log(translateVector)
 	translateVector.setMagnitude(growthFactor);
 
 	return translateVector;
@@ -359,6 +445,7 @@ DOMRipple.prototype.draw = function() {
 	var y = this.translate.coordinates.y;
 	var transformString = 'translate(' + x + 'px,' + y + 'px)';
 
+	this.el.style.webkitTransform = transformString;
 	this.el.style.transform = transformString;
 }
 
@@ -382,7 +469,7 @@ function DOMRippleGroup(attributes) {
 		this.ripples.push(domRipple);
 	}
 }
-DOMRippleGroup.prototype.center = function() {
+DOMRippleGroup.prototype.getCenter = function() {
 	var center = new Point([
 		// x
 		this.parentEl.offsetLeft + (this.parentEl.offsetWidth / 2),
@@ -402,42 +489,6 @@ DOMRippleGroup.prototype.render = function() {
 		//domRipple.oscillate();
 		//domRipple.draw();
 	});
-}
-
-
-
-function Point(dataArray) {
-	this.x = dataArray[0];
-	this.y = dataArray[1]
-}
-function BezierPoint(data) {
-	this.p = data.point;
-	this.v = data.vector;
-}
-
-function Vector(data) {
-	this.coordinates = {};
-	// data: initial point, terminal point
-	for (axis in data.initial) {
-		this.coordinates[axis] = data.terminal[axis] - data.initial[axis];
-	}
-}
-Vector.prototype.getMagnitude = function() {
-	var c = this.coordinates;
-	return Math.sqrt( Math.pow(c.x, 2) + Math.pow(c.y, 2) );
-}
-Vector.prototype.setMagnitude = function(targetMagnitude) {
-	var currMag = this.getMagnitude();
-	var scalar = targetMagnitude / currMag;
-	for (axis in this.coordinates) {
-		this.coordinates[axis] *= scalar;
-	}
-}
-Vector.prototype.addToPoint = function(point) {
-	return new Point([
-		point.x + this.coordinates.x,
-		point.y + this.coordinates.y
-	]);
 }
 
 
@@ -462,7 +513,7 @@ $(window).on('load', function(){
 	window.draw = function(){
 		if (window.bodyOfWater) {
 			bodyOfWater.forEach(function(rippleGroup){
-				var center = rippleGroup.center();
+				var center = rippleGroup.getCenter();
 				rippleGroup.ripples.forEach(function(ripple){
 					ripple.oscillate(center);
 					ripple.draw();
