@@ -21,11 +21,11 @@ user.vessels.forEach(function(vessel){
 		}
 })
 
-var ponderView = new PonderView({collection: ponder});
-var seeView = new SeeView({collection: see});
-var hearView = new HearView({collection: hear});
-var learnView = new LearnView({collection: learn});
-var readView = new ReadView({collection: read});
+// var ponderView = new PonderView({collection: ponder});
+// var seeView = new SeeView({collection: see});
+// var hearView = new HearView({collection: hear});
+// var learnView = new LearnView({collection: learn});
+// var readView = new ReadView({collection: read});
 
 var doneLoading = function() {
 	console.log('done')

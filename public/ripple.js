@@ -178,11 +178,6 @@ function Ripple(attributes){
 		// _.each(this.vertices, function(vertex){
 		// 	// vertex.m += this.amp(this.amplitude);
 
-		// 	// Vector methods from P5
-		// 	var vector = createVector(vertex.v[0], vertex.v[1]);
-		// 	vector.rotate(0.1 - (Math.random() * 0.2));
-		// 	vertex.v = [vector.x, vector.y];		
-		// }, this);
 	}
 	else {
 		this.index = -1;
@@ -288,10 +283,10 @@ function RippleGroup(attributes){
 
 	this.scrollStart = attributes.scrollStart || this.el.offsetTop - originY - 720;
 	this.scrollEnd = attributes.scrollEnd || this.scrollStart + this.el.offsetHeight + (720 * 2);
-	this.scrollFactor = attributes.scrollFactor || 50;
+	this.scrollFactor = attributes.scrollFactor || 40;
 	this.highWaterMark = getScrollState(); //default initial
 	
-	this.amplitude = attributes.amplitude || 20;
+	this.amplitude = attributes.amplitude || 80 || 20;
 	this.initGrowthFactor = attributes.growthFactor || 14;
 	this.prevCenter = this.getCenter();
 
@@ -319,8 +314,6 @@ RippleGroup.prototype.getCenter = function() {
 RippleGroup.prototype.isActive = function() {
 	return getScrollState() > this.scrollStart && getScrollState() < this.scrollEnd;
 }
-
-//needs to happen on scroll
 RippleGroup.prototype.update = function(){
 	if (this.isActive()) {
 		if (this.getCenter() !== this.prevCenter) {
