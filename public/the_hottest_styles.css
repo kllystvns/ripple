@@ -29,6 +29,7 @@ p {
 }
 
 body {
+	background-color: #fbfbfb;
 	width: 100vw;
 	height: 4600px;
 	overflow-x: hidden;
@@ -66,7 +67,7 @@ canvas {
 	-webkit-flex-direction: row;
 	margin: 4px;
 	border: solid 2px transparent;
-	background: rgba(255,255,255,0.9);
+	background: rgba(254,254,254,0.9);
 }
 a, p, button, input {
 	margin: 4px;

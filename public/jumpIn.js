@@ -31,4 +31,14 @@ window.onload = function(){
 		}));
 	}
 
+	$('img').click(function(){
+		user.createGuest();
+	});
+
+	$('img').hover(function(){
+		$('img').css({cursor: 'pointer', opacity: '0.9'});
+	}, function(){
+		$('img').css({cursor: 'default', opacity: '1'});
+	})
+
 }

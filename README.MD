@@ -1,7 +1,8 @@
-Ripple will be a thought board and inspiration aggregator. Its animations will simulate the ripple of waves across water. Users will be able to collect links, aphorisms and various media that inpsire them. These will appear in a few boxes comprising carefully selected categories. Ripple will keep track of a users most current interests, unlike an exhaustive (exhausting) bookmark collection. Data modelling will done through Backbone JS, as well as a light Node JS server connected to Mongo DB. Animated rippling will dynamically change as users scroll through the site. Ripples will bounce off of the various dom nodes. Animation will be done with Processing js.
+Ripple is a thought board and inspiration aggregator. I designed its animations to simulate the ripple of waves across water (or thoughts across the mind). Users are able to collect bookmarks and aphorisms that inpsire them. These bits of inspiration appear in bubbles comprising carefully selected categories. 
 
-## Link
+The rippling animation is triggered as a user scrolls through their collection. I wanted to visualize the way a user interacts with a text-based site, and to energize the familiar experience of scrolling down a page. The animated ripples are SVG paths which are generated dynamically, using vector geometry converted into Bezier curves. 
+
+Ripple is a single-page app with Ajax functionality. Data is modelled with Backbone JS. I have structured a light Node JS server connected to Mongo DB on the back end. 
+
+#### Link
 http://r-i-p-p-l-e.herokuapp.com
-
-## Trello
-https://trello.com/b/qvKAv7jQ/kelly-stevens-ripple

@@ -1,5 +1,5 @@
 var userLoginTemplate = '\
-		<p>Hello, user!</p> \
+		<p>Hello, there!</p> \
 		<p class="message"><%= message %></p> \
 		<input type="text" id="username" placeholder="username"> \
 		<input type="password" id="password" placeholder="password"> \
@@ -8,7 +8,7 @@ var userLoginTemplate = '\
 		<button class="guest">TRY RIPPLE</button>';
 
 var userNewTemplate = '\
-		<p>Hello, user!</p> \
+		<p>Hello, there!</p> \
 		<p class="message"><%= message %></p> \
 		<input type="text" id="username" placeholder="username"> \
 		<input type="text" id="email" placeholder="email"> \
@@ -17,7 +17,7 @@ var userNewTemplate = '\
 		<button class="create">GET STARTED</button>';
 
 var userEditTemplate = '\
-		<p>Hello, user!</p> \
+		<p>Update your info</p> \
 		<p class="message"><%= message %></p> \
 		<input type="text" id="username" placeholder="new username"> \
 		<input type="text" id="email" placeholder="new email"> \
@@ -38,7 +38,7 @@ var userShowTemplate = '\
 		<% if (name) { %> \
 			<p>Hello, <%= name %>!</p> \
 		<% } else { %> \
-			<p>Hello, user!</p> \
+			<p>Hello, there!</p> \
 		<% } %> \
 		<p id="username"><%= username %></p> \
 		<p id="email"><%= email %></p> \
