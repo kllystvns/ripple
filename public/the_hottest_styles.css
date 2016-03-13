@@ -56,9 +56,9 @@ canvas {
 	position: absolute;
 	/*margin: 50px;*/
 	max-width: 520px;
-	min-width: 160px;
-	min-height: 100px;
-	visibility: hidden;
+	min-width: 320px;
+	min-height: 160px;
+
 }
 .vessel li {
 	display: flex;
