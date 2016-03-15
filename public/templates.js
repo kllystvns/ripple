@@ -1,49 +1,49 @@
 var userLoginTemplate = '\
-		<p>Hello, there!</p> \
-		<p class="message"><%= message %></p> \
-		<input type="text" id="username" placeholder="username"> \
-		<input type="password" id="password" placeholder="password"> \
-		<button class="login">SIGN IN</button> \
-		<button class="signup">SIGN UP</button>\
-		<button class="guest">TRY RIPPLE</button>';
+		<li><p>Hello, there!</p></li> \
+		<li><p class="message"><%= message %></p></li> \
+		<li class="inp"><input type="text" id="username" placeholder="username"></li> \
+		<li class="inp"><input type="password" id="password" placeholder="password"></li> \
+		<li class="int"><div class="button login">SIGN IN</div></li> \
+		<li class="int"><div class="button signup">SIGN UP</div></li> \
+		<li class="int"><div class="button guest">TRY RIPPLE</div></li>';
 
 var userNewTemplate = '\
-		<p>Hello, there!</p> \
-		<p class="message"><%= message %></p> \
-		<input type="text" id="username" placeholder="username"> \
-		<input type="text" id="email" placeholder="email"> \
-		<input type="password" id="password" placeholder="password"> \
-		<input type="password" id="password-confirm" placeholder="confirm password"> \
-		<button class="create">GET STARTED</button>';
+		<li><p>Hello, there!</p></li> \
+		<li><p class="message"><%= message %></p></li> \
+		<li class="inp"><input type="text" id="username" placeholder="username"></li> \
+		<li class="inp"><input type="text" id="email" placeholder="email"></li> \
+		<li class="inp"><input type="password" id="password" placeholder="password"></li> \
+		<li class="inp"><input type="password" id="password-confirm" placeholder="confirm password"></li> \
+		<li class="int"><div class="button create">GET STARTED</div></li>';
 
 var userEditTemplate = '\
-		<p>Update your info</p> \
-		<p class="message"><%= message %></p> \
-		<input type="text" id="username" placeholder="new username"> \
-		<input type="text" id="email" placeholder="new email"> \
-		<input type="password" id="password" placeholder="new password"> \
-		<input type="password" id="password-confirm" placeholder="confirm password"> \
-		<button class="update">SAVE</button>';
+		<li><p>Update your info</p></li> \
+		<li><p class="message"><%= message %></p></li> \
+		<li class="inp"><input type="text" id="username" placeholder="new username"></li> \
+		<li class="inp"><input type="text" id="email" placeholder="new email"></li> \
+		<li class="inp"><input type="password" id="password" placeholder="new password"></li> \
+		<li class="inp"><input type="password" id="password-confirm" placeholder="confirm password"></li> \
+		<li class="int"><div class="button update">SAVE</div></li>';
 
 var userGuestTemplate = '\
-		<p>Hello! You can save your info by signing up.</p> \
-		<p class="message"><%= message %></p> \
-		<input type="text" id="username" placeholder="username"> \
-		<input type="text" id="email" placeholder="email"> \
-		<input type="password" id="password" placeholder="password"> \
-		<input type="password" id="password-confirm" placeholder="confirm password"> \
-		<button class="update">GET STARTED</button>';
+		<li><p>Hello! You can save your info by signing up.</p></li> \
+		<li><p class="message"><%= message %></p></li> \
+		<li class="inp"><input type="text" id="username" placeholder="username"></li> \
+		<li class="inp"><input type="text" id="email" placeholder="email"></li> \
+		<li class="inp"><input type="password" id="password" placeholder="password"></li> \
+		<li class="inp"><input type="password" id="password-confirm" placeholder="confirm password"></li> \
+		<li class="int"><div class="button update">GET STARTED</div></li>';
 
 var userShowTemplate = '\
 		<% if (name) { %> \
-			<p>Hello, <%= name %>!</p> \
+			<li><p>Hello, <%= name %>!</p></li> \
 		<% } else { %> \
-			<p>Hello, there!</p> \
+			<li><p>Hello, there!</p></li> \
 		<% } %> \
-		<p id="username"><%= username %></p> \
-		<p id="email"><%= email %></p> \
-		<button class="edit">EDIT</button> \
-		<button class="logout">LOG OUT</button>';
+		<li><p id="username"><%= username %></p></li> \
+		<li><p id="email"><%= email %></p></li> \
+		<li class="int"><div class="button edit">EDIT</button></li> \
+		<li class="int"><div class="button logout">LOG OUT</button></li>';
 
 
 
@@ -65,13 +65,13 @@ var dropletShowTemplate = '\
 		<button class="delete">×</button>';
 
 var dropletEditTemplate = '\
-		<% if (data.category === "ponder") { %> \
+		<% if (data.type === "quote") { %> \
 			<input class="text" type="text" placeholder="record a thought"> \
 			<input class="author" type="text" placeholder="who is it from?"> \
 			<input type="hidden" name="type" class="type" value="quote"> \
 		<% } else { %>	\
 			<input class="name" type="text" placeholder="what have you found?"> \
-			<input class="url" type="text" placeholder="where is it from?(url)"> \
+			<input class="url" type="text" placeholder="where is it from? (url)"> \
 			<input type="hidden" name="type" class="type" value="link"> \
 		<% } %>	\
 		<button class="add">+</button>';

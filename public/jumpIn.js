@@ -9,27 +9,18 @@ window.onload = function(){
 
 
 	window.bodyOfWater = [];
-
-	var ua = navigator.userAgent.toLowerCase();
-	var isMobile = ua.search(/(iphone)|(ipod)|(android)/) !== -1;
-
-	if (isMobile) {
+	
 	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
-
-	}
-	else {	
-	// function RippleGroup(domElement, scrollFactor, scrollEnd, growthFactor, amplitude, color)
-		bodyOfWater.push(new DOMRippleGroup({
-			domElement: '#ripple .ghost',
-			domParentElement: '#ripple .logo',
-			numberOfRipples: 4,
-			growthFactor: 13,
-			frequency: 0.0785,
-			styles: {
-				visibility: 'visible'
-			}
-		}));
-	}
+	bodyOfWater.push(new DOMRippleGroup({
+		domElement: '#ripple .ghost',
+		domParentElement: '#ripple .logo',
+		numberOfRipples: 4,
+		growthFactor: 13,
+		frequency: 0.0785,
+		styles: {
+			visibility: 'visible'
+		}
+	}));
 
 	$('img').click(function(){
 		user.createGuest();

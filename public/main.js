@@ -1,35 +1,24 @@
-// 'var user' (User model) has been declared in EJS
-var userView = new UserView({model: user});
+// 'user' (User model) and 'droplets' have been declared in EJS
+var userView = new UserView({model: window.user});
 
+var vessels = {};
+var views = {};
+['ponder', 'see', 'hear', 'learn', 'read'].forEach(function(category){
+	vessels[category] = new Vessel(null, {category: category});
 
-var ponder = new Vessel(null, {category: 'ponder'});
-var see = new Vessel(null, {category: 'see'});
-var hear = new Vessel(null, {category: 'hear'});
-var learn = new Vessel(null, {category: 'learn'});
-var read = new Vessel(null, {category: 'read'});
+	views[category] = new VesselView({collection: vessels[category], el: '#' + category});
+	
+	var theseDroplets = _.where(window.droplets, {category: category});
+	theseDroplets.forEach(function(dropData) {
+		vessels[category].add(new Droplet(dropData));
+	});
+	vessels[category].needsNew();
+});
 
-user.vessels = [ponder, see, hear, learn, read];
-user.vessels.forEach(function(vessel){
-		var theseDroplets = _.where(window.droplets, {category: vessel.category});
-		for (var i = 0; i < 5; i++) {
-			if (theseDroplets[i]) {
-				vessel.add(new Droplet(theseDroplets[i]));
-			}
-			else {
-				vessel.add(new Droplet({type: 'uninstantiated', category: vessel.category}));
-			}
-		}
-})
-
-var ponderView = new PonderView({collection: ponder});
-var seeView = new SeeView({collection: see});
-var hearView = new HearView({collection: hear});
-var learnView = new LearnView({collection: learn});
-var readView = new ReadView({collection: read});
 
 var doneLoading = function() {
 	console.log('done')
-	$('#loading').hide();
+	$('#loading').remove();
 
 	$(window).on('scroll', function(e) {
 		_.each($('.arrow-hint'), function(e) {
@@ -52,7 +41,8 @@ window.onload = function(){
 	}));
 	bodyOfWater.push(new RippleGroup({
 		domElement: '#ripple', 
-		scrollFactor: 40, 
+		scrollFactor: 40,
+		scrollStart: 1, 
 		scrollEnd: 3800, 
 		growthFactor: 30, 
 		color: '#98a'

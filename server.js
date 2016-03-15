@@ -42,7 +42,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 	var Droplets = db.collection('droplets');
 	var clone = function(object){
 		var newObject = {}
-		for (attr in object) {
+		for (var attr in object) {
 			newObject[attr] = object[attr];
 		}
 		return newObject;
@@ -68,6 +68,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 				}
 				Droplets.find({user_id: new ObjectID(req.session.user_id)}).toArray(function(err, results){
 					var droplets = results;
+	console.log(results)
 					res.render('index.ejs', { userData: user, dropletsData: droplets, isAuthenticated: true });
 				})
 			})
@@ -92,7 +93,6 @@ MongoClient.connect(MongoURI, function(err, db) {
 			if (result) {
 				error = null;
 				if (!(authenticate(req.body.password, result.passCrypt))) {
-					console.log('righthere')
 					error = 'incorrect password';
 					res.json({ message: error });
 				}
@@ -130,11 +130,7 @@ MongoClient.connect(MongoURI, function(err, db) {
 				var dropletsData = [];
 				for (var i = 0; i < defaultDroplets.length; i++) {
 					var drop = clone(defaultDroplets[i]);
-				console.log(1)
-				console.log(drop);
 					drop.user_id = result._id;
-				console.log(2)
-				console.log(drop);
 					dropletsData.push(drop);
 				}
 				Droplets.insert(dropletsData, function(){
@@ -179,42 +175,54 @@ MongoClient.connect(MongoURI, function(err, db) {
 
 		var updateUser = function(data){
 			var newUserData = {};
-			data.username ? newUserData.username = data.username : false;
-			data.email ? newUserData.email = data.email : false ;
-			data.name ? newUserData.name = data.name : false;
+			for (attr in data) {
+				if (['username', 'email', 'name'].indexOf(attr) > -1) {
+					if (data[attr] !== '') {
+						newUserData[attr] = data[attr];
+					}
+				}
+			}
 			newUserData.userMode = 'full';
 			if (data.password) {
 				var salt = bcrypt.genSaltSync(10);
 				newUserData.passCrypt = bcrypt.hashSync(data.password, salt);
 			}
-			console.log(data);
 			Users.updateOne(
 				{_id: new ObjectID(req.session.user_id)},
 				{$set: newUserData},
 				function(err, result){
 					Users.find({_id: new ObjectID(req.session.user_id)}, {passCrypt: 0}).toArray(function(err, results){
 						var user = results[0];
-						res.json(user);
+						res.json({user: user});
 					});
 				}
 			);
 		}
 
 		var error;
-		if (req.body.password && (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7)) {
+		if (req.body.password && (req.body.password !== req.body.passwordConfirm || req.body.password.length < 7)) {				
 			error = 'invalid password';
 		}
-		Users.findOne({username: req.body.username}, function(err, result){
-			if (result || error) {
-				if (result || req.body.username === '') { 
-					error = 'username is unavailable';
+		if (req.body.username) {
+			Users.findOne({username: req.body.username}, function(err, result){
+				if (result || error) {
+					if (result) { 
+						error = 'username is unavailable';
+					}
+					res.json({ message: error });
 				}
+				else {
+					updateUser(req.body);
+				}
+			});
+		} else {
+			if (error) {
 				res.json({ message: error });
-			}
-			else {
+			} else {
 				updateUser(req.body);
 			}
-		});
+		}
+
 	})
 
 
@@ -226,19 +234,15 @@ MongoClient.connect(MongoURI, function(err, db) {
 		Droplets.insert(dropletData, function(err, result){
 			var result = result.ops[0];
 			res.json(result);
-			console.log(result);
 		})
 	})
 
 
-// EDIT USER'S DROPLETS
-
-	app.put('/droplets/:id', function(req, res){
-		console.log(req.params)
-
-		Droplets.remove({_id: new ObjectID(req.body._id)}, function(){
-			res.json({type: 'uninstantiated', category: req.body.category});
-		})
+// DELETE A DROPLET
+	app.delete('/droplets/:id', function(req, res){
+		Droplets.remove({_id: new ObjectID(req.params.id)}, function(err, result){
+			res.json({status: 'success'});
+		});
 	});
 
 });

@@ -17,6 +17,8 @@
 	font-size: 18px;
 	font-family: 'OpenSans';
 	color: #656;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 }
 *:focus {
 	outline: none;
@@ -36,9 +38,11 @@ body {
 }
 
 #loading {
-	position: absolute;
-	width: 100%;
-	height: 100%;
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
 	background: white;
 	z-index: 100;
 }
@@ -61,20 +65,24 @@ canvas {
 
 }
 .vessel li {
-	display: flex;
 	display: -webkit-flex;
-	flex-direction: row;
+	display: flex;
 	-webkit-flex-direction: row;
+	flex-direction: row;
 	margin: 4px;
-	border: solid 2px transparent;
 	background: rgba(254,254,254,0.9);
+	border: solid 2px rgba(200,200,200,0.2);
 }
 a, p, button, input {
 	margin: 4px;
+	padding: 4px;
 }
 .vessel li:hover {
 	background-color: #f8fbfb;
 	border: dashed 2px #c7c5e9;
+}
+.vessel a {
+	width: 100%;
 }
 .vessel a:hover {
 	color: #289;
@@ -82,6 +90,13 @@ a, p, button, input {
 .vessel .link, .vessel .quote {
 	flex-grow: 2;
 	-webkit-flex-grow: 2;
+	display: -webkit-flex;
+	display: flex;
+}
+.vessel .quote {
+	-webkit-flex-direction: column;
+	flex-direction: column;
+
 }
 .vessel li.title {
 	border-color: transparent; 
@@ -92,8 +107,6 @@ a, p, button, input {
 .vessel li.title:hover {
 	border-color: transparent; 
 }
-
-
 
 input {
 	visibility: hidden;
@@ -106,6 +119,7 @@ input {
 	/*visibility: hidden;*/
 }
 button {
+	cursor: pointer;
 	width: 24px;
 	height: 24px;
 	flex: 0 0 auto;
@@ -118,35 +132,41 @@ button:hover {
 	background-color: #e2f1fb;
 }
 
-#user {
-	left: 50px;
-	top: 220px;
-	display: flex;
-	display: -webkit-flex;
-	flex-direction: column;
-	-webkit-flex-direction: column;
-}
+
+
 #user * {
-	margin: 4px;
-	flex-grow: 1;
-	-webkit-flex-grow: 1;
 	color: #878;
 }
-#user button {
-	width: auto;
-	padding: 4px;
-	padding-right: 6px;
-	padding-bottom: 6px;
-	text-align: left;
+#user li {
+	background-color: #faf8fb;
+	padding: 0;
+}
+#user li:hover {
+	border: solid 2px rgba(200,200,200,0.2);	
+}
+#user li.int:hover {
+	border: solid 2px rgba(50,150,170,0.2);
+}
+#user .button, #user p {
+	margin: 0;
+	padding: 6px;
+}
+#user .button {
+	width: 100%;
+	text-align: right;
 	cursor: pointer;
 }
-#user button:hover {
+#user .button:hover {
 	color: #289;
-	background-color: #f4faff;
+	background-color: #f6f7fa;
 }
 #user input {
+	margin: 6px;
 	visibility: visible;
-	background-color: #f4faff;
+	background: transparent;
+}
+#user li.inp:hover {
+	border: dashed 2px #c7c5e9;
 }
 #user .guest {
 	color: #77bdda;
@@ -154,6 +174,21 @@ button:hover {
 #user .guest:hover {
 	color: #0ad;
 }
+
+
+
+#jump-in-bkgrd {
+	position: fixed;
+	top: calc(42vh + 100px);
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: -100;
+	background: -webkit-linear-gradient(90deg, #8e989f, #dce1e4 50%, #fffdfd);
+	background: linear-gradient(0deg, #8e989f, #dce1e4 50%, #fffdfd);
+}
+
+
 
 #ripple {
 	position: absolute;
@@ -164,6 +199,16 @@ button:hover {
 	right: 22vw;
 	text-align: center;
 }
+#ripple .vessel {
+	position: static;
+	float: right;
+}
+#ripple .vessel li, #ripple .vessel li:hover {
+	display: inline-block;
+	float: right;
+	background-color: rgba(229,225,230,0.6);
+	border: solid 2px rgba(185,185,185,0.8);
+}
 #ripple p {
 	text-align: right;
 	color: #656;
@@ -173,17 +218,35 @@ button:hover {
 #ripple .sub {
 	font-size: 18px;
 }
+#ripple .sub-sub {
+	font-size: 17px;
+	color: #759;
+}
+#ripple .arrow-hint {
+	position: absolute;
+	width: 100%;
+}
+#ripple .arrow-hint-0 {
+	top: -2.4em;
+	left: 0;
+}
+#ripple .arrow-hint-1 {
+	bottom: -3.2em;
+	left: 0;
+}
 #ripple .arrow-hint p {
 	color: #908c9e;
 	font-family: 'Syncopate';
 	font-size: 60px; 
-	display: inline-block;
-	transform: rotate(90deg);
-	-webkit-transform: rotate(90deg);
+	text-align: center;
 }
 #ripple .arrow-hint-0 p {
-	transform: rotate(270deg);
-	-webkit-transform: rotate(270deg);
+	transform: rotate(-90deg);
+	-webkit-transform: rotate(-90deg);
+}
+#ripple .arrow-hint-1 p {
+	transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
 }
 #ripple .spacer {
 	height: 100px;
@@ -196,6 +259,10 @@ button:hover {
 	z-index: -10;
 }
 
+#user {
+	top: 220px;
+	left: 50px;
+}
 #ponder {
 	left: 50px;
 	top: 1450px;
@@ -217,6 +284,10 @@ button:hover {
 	top: 3850px;
 }
 @media (max-width: 480px) {
+	#user {
+		top: 220px;
+		left: 50px;
+	}
 	#ripple {
 		right: 50px;
 	}
@@ -241,5 +312,15 @@ button:hover {
 		top: 3850px;
 	}
 }
+
+
+
+
+
+
+
+
+
+
 
 

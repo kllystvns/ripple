@@ -1,11 +1,3 @@
-// object cloning utility
-var clone = function(object){
-	var newObject = {}
-	for (attr in object) {
-		newObject[attr] = object[attr];
-	}
-	return newObject;
-}
 
 var User = Backbone.Model.extend({
 	urlRoot: '/users',
@@ -22,7 +14,7 @@ var User = Backbone.Model.extend({
 					window.location = response.redirect;
 				}
 				else {
-					model.trigger('syncAttempt', null, response);
+					model.trigger('syncAttempt', null, response.message);
 				}
 			},
 			error: function(model, response){}
@@ -42,7 +34,12 @@ var User = Backbone.Model.extend({
 	update: function(data){
 		this.save(data, {
 			success: function(model, response){
-				model.trigger('updated', null, response);
+				if (response.message) {
+					model.trigger('updateAttempt', null, response.message);
+				} else {
+					model.set(response.user);
+					model.trigger('updated')
+				}
 			},
 			error: function(model, response){}
 		})
@@ -53,13 +50,13 @@ var User = Backbone.Model.extend({
 			method: 'POST',
 			data: data,
 			context: this
-		}).done(function(response){
+		})
+		.done(function(response){
 			if (response.redirect) {
 				window.location = response.redirect;
 			}
 			else {
-				// null is placeholder for jQuery event
-				this.trigger('loginAttempt', null, response);
+				this.trigger('loginAttempt', null, response.message);
 			}
 		});
 	},
@@ -82,36 +79,35 @@ var UserView = Backbone.View.extend({
 	templateEdit: _.template(userEditTemplate),
 	templateGuest: _.template(userGuestTemplate),
 	initialize: function(){
-		this.listenTo(this.model, 'syncAttempt', function(object, response){
-			this.renderNew(null, response.message);
+		this.listenTo(this.model, 'syncAttempt', function(event, message){
+			this.renderNew(null, message);
 		});
-		this.listenTo(this.model, 'loginAttempt', function(object, response){
-			this.renderLogin(null, response.message);
+		this.listenTo(this.model, 'loginAttempt', function(event, message){
+			this.renderLogin(null, message);
 		});
-		this.listenTo(this.model, 'updated', function(object, response){
-			this.model.set(response)
-			console.log('hey')
-			this.render(null, response);
+		this.listenTo(this.model, 'updateAttempt', function(event, message){
+			this.renderEdit(null, message);
+		});		
+		this.listenTo(this.model, 'updated', function(event, message){
+			this.render(null, null);
 		});
-		this.render();
+
+		this.render(null, null);
 	},
-	render: function(){
+	render: function(event, message){
 		if (user.isAuthenticated === false) {
-			console.log(1)
-			this.renderLogin();
+			this.renderLogin(event, message);
 		}
 		else if (user.attributes.userMode === 'guest') {
-			this.renderGuest();
+			this.renderGuest(event, message);
 		}
 		else {
-			console.log(2)
 			this.$el.html(this.templateShow(this.model.attributes) );
 		}
 
 	},
 	// `event` will never be used, but is passed by jQuery
 	renderLogin: function(event, message){
-		console.log('here')
 		this.$el.html(this.templateLogin({message: '' || message}));
 	},
 	renderNew: function(event, message){
@@ -183,19 +179,8 @@ var Droplet = Backbone.Model.extend({
 	create: function(data){
 		this.set(data);
 		this.save(null, {
-			success: function(model, response){
-				model.trigger('created')
-			}
+			success: function(model, response) {}
 		});
-	},
-	liquidate: function(){
-		this.save(null, {
-			success: function(model, response){
-				model.clear()
-				model.set(response);
-				model.trigger('liquidate');
-			}
-		})
 	}
 }); 
 
@@ -204,11 +189,10 @@ var DropletView = Backbone.View.extend({
 	templateShow: _.template(dropletShowTemplate),
 	templateEdit: _.template(dropletEditTemplate),
 	initialize: function(){
-		this.listenTo(this.model, 'created', this.render);
-		this.listenTo(this.model, 'liquidate', this.render);
+		this.listenTo(this.model, 'change', this.render);
 	},
 	render: function() {
-		if (this.model.attributes.type === 'uninstantiated') {
+		if (this.model.isNew()) {
 			return this.renderEdit();
 		}
 		else {
@@ -226,16 +210,16 @@ var DropletView = Backbone.View.extend({
 		this.$('.url').val() ? data.url = this.$('.url').val() : null;
 		this.$('.author').val() ? data.author = this.$('.author').val() : null;
 		this.$('.text').val() ? data.text = this.$('.text').val() : null;
-		data.type = this.$('.type').val();
 
 		this.model.create(data);
 	},
-	destroy: function(){
-		this.model.liquidate();
+	liquidate: function(){
+		this.model.destroy();
+		this.$el.remove();
 	},
 	events: {
 		'click .add': 'create',
-		'click .delete': 'destroy',
+		'click .delete': 'liquidate',
 		'mouseover': function(){
 			this.$('input').css('visibility', 'visible');
 			// this.$('.delete').css('visibility', 'visible');
@@ -258,45 +242,46 @@ var Vessel = Backbone.Collection.extend({
 	url: '/droplets',
 	initialize: function(models, options){
 		this.category = options.category;
-	}
-})
+		if (this.category === 'ponder') {
+			this.dropletType = 'quote';
+		} else {
+			this.dropletType = 'link';
+		}
+
+		this.on('sync', this.needsNew, this);
+	},
+	addNew: function() {
+		if (this.models.length < 11) {
+			this.add(new Droplet({type: this.dropletType, category: this.category}));
+		}
+	},
+	needsNew: function() {
+			var needsNew = true;
+			for (var i = 0; i < this.models.length; i++) {
+				if (this.models[i].isNew()) { 
+					needsNew = false;
+				}
+			}
+			if (needsNew) { this.addNew() }
+		}
+});
 
 var VesselView = Backbone.View.extend({
+	dropletType: 'link',
+	templateShow: _.template('<li class="title"><h2><%= category.toUpperCase() %></h2></li>'),
 	initialize: function(){
 		this.render();
+		this.listenTo(this.collection, 'add', this.renderDroplet);
 	},
-	dropletType: 'link',
 	render: function(){
-		this.$el.append(this.template);
-		_.each(this.collection.models, function(e){
-			var currentDroplet = new DropletView({model: e});
-			var li = currentDroplet.render();
-			this.$el.append(li);
-		}, this);
+		this.$el.append(this.templateShow({category: this.collection.category}));
+	},
+	renderDroplet: function(model, collection, options) {
+		var view = new DropletView({model: model});
+console.log(model.isNew())
+		view.render();
+		this.$el.append(view.el);
 	}
-});
-
-// Specialized Vessel views depending on content
-var PonderView = VesselView.extend({
-	el: '#ponder',
-	dropletType: 'quote',
-	template: '<li class="title"><h2>REFLECT</h2></li>'
-});
-var SeeView = VesselView.extend({
-	el: '#see',
-	template: '<li class="title"><h2>SEE</h2></li>'
-});
-var HearView = VesselView.extend({
-	el: '#hear',
-	template: '<li class="title"><h2>HEAR</h2></li>'
-});
-var LearnView = VesselView.extend({
-	el: '#learn',
-	template: '<li class="title"><h2>LEARN</h2></li>'
-});
-var ReadView = VesselView.extend({
-	el: '#read',
-	template: '<li class="title"><h2>READ</h2></li>'
 });
 
 
